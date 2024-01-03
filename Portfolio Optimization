@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 from scipy.optimize import minimize
-import tensorflow as tf
+import tensorflow as tf 
 
 # PortfolioOptimizer class handles portfolio optimization logic
 class PortfolioOptimizer:
@@ -22,21 +22,22 @@ class PortfolioOptimizer:
     # Train a neural network and make predictions on future stock returns
     def neuralnetwork_prediction(self, returns_list_cleaned_aligned):
         returns_array = np.vstack(returns_list_cleaned_aligned)
-        x = returns_array[:-1, :]
+        X = returns_array[:-1, :]
         y = returns_array[1:, :]
 
         # Define and train a neural network model
         model = tf.keras.Sequential([
+            tf.keras.layers.Dense(100, activation="relu"),
             tf.keras.layers.Dense(75, activation="relu"),
-            tf.keras.layers.Dense(75, activation="relu"),
-            tf.keras.layers.Dense(75, activation="relu"),
+            tf.keras.layers.Dense(50, activation="relu"),
+            tf.keras.layers.Dense(25, activation="relu"),
             tf.keras.layers.Dense(1)
         ])
         model.compile(optimizer="adam", loss="mse")
-        model.fit(x, y, epochs=100, verbose=0)
+        model.fit(X, y, epochs=100, verbose=0)
 
         # Predict returns using the trained neural network
-        predicted_returns = model.predict(x[-1:, :])
+        predicted_returns = model.predict(X[-1:, :])
         return predicted_returns.flatten()
 
     # Optimize portfolio weights using predicted returns from neural network
