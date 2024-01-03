@@ -22,7 +22,7 @@ class PortfolioOptimizer:
     # Train a neural network and make predictions on future stock returns
     def neuralnetwork_prediction(self, returns_list_cleaned_aligned):
         returns_array = np.vstack(returns_list_cleaned_aligned)
-        X = returns_array[:-1, :]
+        x = returns_array[:-1, :]
         y = returns_array[1:, :]
 
         # Define and train a neural network model
@@ -34,10 +34,10 @@ class PortfolioOptimizer:
             tf.keras.layers.Dense(1)
         ])
         model.compile(optimizer="adam", loss="mse")
-        model.fit(X, y, epochs=100, verbose=0)
+        model.fit(x, y, epochs=100, verbose=0)
 
         # Predict returns using the trained neural network
-        predicted_returns = model.predict(X[-1:, :])
+        predicted_returns = model.predict(x[-1:, :])
         return predicted_returns.flatten()
 
     # Optimize portfolio weights using predicted returns from neural network
