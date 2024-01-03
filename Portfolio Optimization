@@ -25,16 +25,22 @@ class PortfolioOptimizer:
         x = returns_array[:-1, :]
         y = returns_array[1:, :]
 
-        # Define and train a neural network model
+        # Define and train a neural network model with dropout
         model = tf.keras.Sequential([
+            tf.keras.layers.Dense(500, activation="relu"),
+            tf.keras.layers.Dropout(0.5),  # Adjust the dropout rate as needed
+            tf.keras.layers.Dense(400, activation="relu"),
+            tf.keras.layers.Dropout(0.4),
+            tf.keras.layers.Dense(300, activation="relu"),
+            tf.keras.layers.Dropout(0.3),
+            tf.keras.layers.Dense(200, activation="relu"),
+            tf.keras.layers.Dropout(0.2),
             tf.keras.layers.Dense(100, activation="relu"),
-            tf.keras.layers.Dense(75, activation="relu"),
-            tf.keras.layers.Dense(50, activation="relu"),
-            tf.keras.layers.Dense(25, activation="relu"),
+            tf.keras.layers.Dropout(0.1),
             tf.keras.layers.Dense(1)
         ])
         model.compile(optimizer="adam", loss="mse")
-        model.fit(x, y, epochs=100, verbose=0)
+        model.fit(x, y, epochs=250, verbose=0)
 
         # Predict returns using the trained neural network
         predicted_returns = model.predict(x[-1:, :])
@@ -172,64 +178,87 @@ class PortfolioOptimizer:
 # PortfolioGUI class handles the graphical user interface
 class PortfolioGUI:
     def __init__(self, optimizer):
-        # Initialize GUI components and set the window title
         self.optimizer = optimizer
         self.root = tk.Tk()
         self.root.title("Portfolio Optimization GUI")
         self.gui_style()
         self.input_widgets()
         self.result_text = self.result_widget()
-        self.root.geometry("500x500")
+        self.feedback_label = self.feedback_widget()
+        self.progress_bar = None
+        self.root.geometry("500x550")
 
-    # Configure style settings for the GUI
     def gui_style(self):
         style = ttk.Style()
-        style.configure("TButton", padding=(10, 5), font=("Helvetica", 12))
+        style.configure("TButton", padding=(10, 5), font=("Calibri", 12))
 
-    # Create input widgets for user interaction
     def input_widgets(self):
-        # Label for entering the number of stocks
         num_stock_label = ttk.Label(self.root, text="Number of stocks:")
         num_stock_label.pack(pady=10)
 
-        # Entry field for user input
         self.num_stock_entry = ttk.Entry(self.root, font=("Helvetica", 12))
         self.num_stock_entry.pack(pady=10)
 
-        # Label for displaying error messages
         invalid_label = ttk.Label(self.root, text="", foreground="red", font=("Helvetica", 12))
         invalid_label.pack(pady=10)
 
-        # Button to trigger portfolio optimization
         run_button = ttk.Button(self.root, text="Run Portfolio Optimization", command=self.run_optimization)
         run_button.pack(pady=20)
 
-    # Create result widget for displaying optimization results
     def result_widget(self):
         result_text = scrolledtext.ScrolledText(self.root, width=50, height=15, font=("Calibri", 12))
         result_text.pack(pady=20)
         return result_text
 
-    # Trigger portfolio optimization based on user input
+    def feedback_widget(self):
+        feedback_label = ttk.Label(self.root, text="", foreground="cyan", font=("Calibri", 12))
+        feedback_label.pack(pady=10)
+        return feedback_label
+
     def run_optimization(self):
         num_stock_input = self.num_stock_entry.get()
 
         try:
             num_stock = int(num_stock_input)
             if num_stock < 2:
-                messagebox.showerror("Please enter a number greater than 1")
+                messagebox.showerror("Error", "Please enter a number greater than 1.")
+                return
         except ValueError:
-            messagebox.showerror("Error", "Invalid number of stocks. Enter a valid positive integer greater 1.")
+            messagebox.showerror("Error", "Invalid number of stocks. Enter a valid positive integer greater than 1.")
             return
 
-        invalid_label = ttk.Label(self.root, text="", foreground="red", font=("Helvetica", 12))
-        self.optimizer.portfolio_optimization(num_stock, invalid_label, self.result_text)
+        self.feedback_label.config(text="Optimization in progress...")
+        self.root.update()
 
-    # Run the GUI application
+        # Disable the button and run the optimization
+        self.disable_run_button()
+        try:
+            invalid_label = ttk.Label(self.root, text="", foreground="red", font=("Helvetica", 12))
+            self.optimizer.portfolio_optimization(num_stock, invalid_label, self.result_text)
+            self.feedback_label.config(text="Optimization completed successfully.")
+        except Exception as e:
+            self.feedback_label.config(text=f"Error during optimization: {str(e)}")
+        finally:
+            self.enable_run_button()
+
+    def disable_run_button(self):
+        for widget in self.root.winfo_children():
+            if isinstance(widget, ttk.Button):
+                widget["state"] = "disabled"
+        self.progress_bar = ttk.Progressbar(self.root, orient="horizontal", length=200, mode="indeterminate")
+        self.progress_bar.pack(pady=10)
+        self.progress_bar.start()
+
+    def enable_run_button(self):
+        for widget in self.root.winfo_children():
+            if isinstance(widget, ttk.Button):
+                widget["state"] = "normal"
+        self.progress_bar.stop()
+        self.progress_bar.destroy()
+
     def run_gui(self):
         self.root.mainloop()
 
-# Main entry point when script is executed
 if __name__ == "__main__":
     optimizer = PortfolioOptimizer()
     gui = PortfolioGUI(optimizer)
