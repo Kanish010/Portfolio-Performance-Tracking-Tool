@@ -147,10 +147,10 @@ class PortfolioOptimizer:
         optimal_weights_mc = self.monte_carlo(returns_list_cleaned_aligned)
 
         result_text.delete(1.0, tk.END)
-        result_text.insert(tk.END, "🚀 Portfolio Optimization Results 🚀:\n\n")
-        self.display_results(optimal_weights_equal, "Equal-weighted", result_text)
+        result_text.insert(tk.END, "🚀 Portfolio Optimization Results 🚀:\n")
         self.display_results(optimal_weights_optimal, "Optimal Portfolio", result_text)
         self.display_results(optimal_weights_mc, "Monte Carlo Optimized", result_text)
+        self.display_results(optimal_weights_equal, "Equal-weighted", result_text)
 
         for stock, historical_data in self.historical_data_list:
             self.plot_data(historical_data, stock)
@@ -175,7 +175,7 @@ class PortfolioGUI:
         # Initialize GUI components and set the window title
         self.optimizer = optimizer
         self.root = tk.Tk()
-        self.root.title("📈 Portfolio Optimization GUI 📉")
+        self.root.title("Portfolio Optimization GUI")
         self.gui_style()
         self.input_widgets()
         self.result_text = self.result_widget()
@@ -217,9 +217,9 @@ class PortfolioGUI:
         try:
             num_stock = int(num_stock_input)
             if num_stock < 2:
-                raise ValueError("Please enter a number greater than 1.")
+                messagebox.showerror("Please enter a number greater than 1")
         except ValueError:
-            messagebox.showerror("Error", "Invalid input for the number of stocks. Please enter a valid positive integer.")
+            messagebox.showerror("Error", "Invalid number of stocks. Enter a valid positive integer greater 1.")
             return
 
         invalid_label = ttk.Label(self.root, text="", foreground="red", font=("Helvetica", 12))
