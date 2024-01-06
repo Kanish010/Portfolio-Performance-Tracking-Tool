@@ -74,7 +74,7 @@ class PortfolioOptimizer:
         portfolio_return = np.sum(predicted_returns * weights)
         portfolio_risk = np.sqrt(np.dot(weights.T, np.dot(cov_matrix, weights)))
         return -portfolio_return + 0.5 * portfolio_risk
-    
+
     # Monte Carlo simulation for portfolio optimization
     def monte_carlo(self, returns_list_cleaned_aligned, num_simulations=2500, risk_free_rate=0.0):
         cov_matrix = np.cov(np.vstack(returns_list_cleaned_aligned))
@@ -154,7 +154,7 @@ class PortfolioOptimizer:
 
         result_text.delete(1.0, tk.END)
         result_text.insert(tk.END, "🚀 Portfolio Optimization Results 🚀:\n")
-        self.display_results(optimal_weights_optimal, "Optimal Portfolio", result_text)
+        self.display_results(optimal_weights_optimal, "Optimal", result_text)
         self.display_results(optimal_weights_mc, "Monte Carlo Optimized", result_text)
         self.display_results(optimal_weights_equal, "Equal-weighted", result_text)
 
