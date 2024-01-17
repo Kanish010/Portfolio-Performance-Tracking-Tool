@@ -5,7 +5,7 @@ import tensorflow as tf
 import tkinter as tk
 import matplotlib.pyplot as plt
 
-class NeuralNetPortfolioOptimizer:
+class NeuralNetOptimizer:
     def __init__(self):
         self.historical_data_list = []
 
@@ -119,5 +119,5 @@ class NeuralNetPortfolioOptimizer:
         tk.messagebox.showerror("Error", message)
 
 if __name__ == "__main__":
-    optimizer = NeuralNetPortfolioOptimizer()
+    optimizer = NeuralNetOptimizer()
     # Example: Call methods or perform actions using the optimizer object

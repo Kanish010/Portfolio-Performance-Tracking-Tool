@@ -5,7 +5,7 @@ import tkinter as tk
 from tkinter import simpledialog
 import matplotlib.pyplot as plt
 
-class MonteCarloPortfolioOptimizer:
+class MonteCarloOptimizer:
     def __init__(self):
         self.historical_data_list = []
 
@@ -98,4 +98,4 @@ class MonteCarloPortfolioOptimizer:
         tk.messagebox.showerror("Error", message)
 
 if __name__ == "__main__":
-    mc_optimizer = MonteCarloPortfolioOptimizer()
+    mc_optimizer = MonteCarloOptimizer()

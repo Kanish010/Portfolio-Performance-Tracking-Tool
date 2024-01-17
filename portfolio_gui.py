@@ -1,8 +1,8 @@
 import tkinter as tk
 from tkinter import ttk, scrolledtext, simpledialog, messagebox
 import numpy as np
-from neural_net_optimizer import NeuralNetPortfolioOptimizer
-from monte_carlo_optimizer import MonteCarloPortfolioOptimizer
+from neural_net_optimizer import NeuralNetOptimizer
+from monte_carlo_optimizer import MonteCarloOptimizer
 
 class PortfolioGUI:
     def __init__(self, nn_optimizer, mc_optimizer):
@@ -135,7 +135,7 @@ class PortfolioGUI:
         tk.messagebox.showerror("Error", message)
 
 if __name__ == "__main__":
-    nn_optimizer = NeuralNetPortfolioOptimizer()
-    mc_optimizer = MonteCarloPortfolioOptimizer()
+    nn_optimizer = NeuralNetOptimizer()
+    mc_optimizer = MonteCarloOptimizer()
     gui = PortfolioGUI(nn_optimizer, mc_optimizer)
     gui.run_gui()
