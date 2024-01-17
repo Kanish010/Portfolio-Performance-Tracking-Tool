@@ -115,7 +115,7 @@ class PortfolioGUI:
                 if not stock:
                     break
 
-                stock = stock.upper()
+                stock = stock.upper().rstrip()
                 historical_data = self.nn_optimizer.historical_stock_data(stock)
                 if not historical_data.empty:
                     historical_data_list.append((stock, historical_data))
