@@ -1,11 +1,14 @@
 import tkinter as tk
-from tkinter import ttk, scrolledtext, messagebox
-from portfolio_optimizer import PortfolioOptimizer
+from tkinter import ttk, scrolledtext, simpledialog, messagebox
+import numpy as np
+from neural_net_optimizer import NeuralNetPortfolioOptimizer
+from monte_carlo_optimizer import MonteCarloPortfolioOptimizer
 
-# PortfolioGUI class handles the graphical user interface
 class PortfolioGUI:
-    def __init__(self, optimizer):
-        self.optimizer = optimizer
+    def __init__(self, nn_optimizer, mc_optimizer):
+        self.nn_optimizer = nn_optimizer
+        self.mc_optimizer = mc_optimizer
+        self.historical_data_list = []
         self.root = tk.Tk()
         self.root.title("Portfolio Optimization GUI")
         self.gui_style()
@@ -61,7 +64,24 @@ class PortfolioGUI:
         self.disable_run_button()
         try:
             invalid_label = ttk.Label(self.root, text="", foreground="red", font=("Helvetica", 12))
-            self.optimizer.portfolio_optimization(num_stock, invalid_label, self.result_text)
+            self.historical_data_list = self.stock_data(num_stock, invalid_label)
+            
+            if not self.historical_data_list:
+                invalid_label.config(text="No valid stocks entered. Please try again.")
+                return
+
+            returns_list_cleaned = [data["Close"].pct_change().dropna().values for _, data in self.historical_data_list]
+            min_length = min(len(arr) for arr in returns_list_cleaned)
+            returns_list_cleaned_aligned = [np.resize(arr, min_length) for arr in returns_list_cleaned]
+
+            # Neural Net Optimization
+            optimal_weights_nn = self.nn_optimizer.optimal_weights(returns_list_cleaned_aligned)[1]
+            self.display_results(optimal_weights_nn, "Neural Net Optimized")
+
+            # Monte Carlo Optimization
+            optimal_weights_mc = self.mc_optimizer.monte_carlo(returns_list_cleaned_aligned)
+            self.display_results(optimal_weights_mc, "Monte Carlo Optimized")
+
             self.feedback_label.config(text="Optimization completed successfully.")
         except Exception as e:
             self.feedback_label.config(text=f"Error during optimization: {str(e)}")
@@ -86,7 +106,36 @@ class PortfolioGUI:
     def run_gui(self):
         self.root.mainloop()
 
+    def stock_data(self, num_stock, invalid_label):
+        historical_data_list = []
+
+        for _ in range(num_stock):
+            while True:
+                stock = simpledialog.askstring("Enter Stock Symbol", "Enter the stock symbol: ")
+                if not stock:
+                    break
+
+                stock = stock.upper()
+                historical_data = self.nn_optimizer.historical_stock_data(stock)
+                if not historical_data.empty:
+                    historical_data_list.append((stock, historical_data))
+                    break
+                else:
+                    self.show_error_message(f"Invalid stock ticker or no data available for {stock}. Please choose again.")
+
+        return historical_data_list
+
+    def display_results(self, optimal_weights, title):
+        self.result_text.insert(tk.END, f"\n{title} Portfolio:\n")
+        for stock, weight in zip([stock for stock, _ in self.historical_data_list], optimal_weights):
+            self.result_text.insert(tk.END, f"   {stock}: {weight:.2f}%\n")
+        self.result_text.insert(tk.END, "\n")
+
+    def show_error_message(self, message):
+        tk.messagebox.showerror("Error", message)
+
 if __name__ == "__main__":
-    optimizer = PortfolioOptimizer()
-    gui = PortfolioGUI(optimizer)
+    nn_optimizer = NeuralNetPortfolioOptimizer()
+    mc_optimizer = MonteCarloPortfolioOptimizer()
+    gui = PortfolioGUI(nn_optimizer, mc_optimizer)
     gui.run_gui()
