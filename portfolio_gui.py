@@ -20,7 +20,7 @@ class PortfolioGUI:
 
     def gui_style(self):
         style = ttk.Style()
-        style.configure("TButton", padding=(10, 5), font=("Calibri", 12))
+        style.configure("TRoundButton", padding=(10, 5), font=("Calibri", 12))
 
     def input_widgets(self):
         num_stock_label = ttk.Label(self.root, text="Number of stocks:")
