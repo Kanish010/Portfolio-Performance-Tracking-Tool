@@ -46,7 +46,7 @@ class PortfolioGUI:
         return feedback_label
 
     def run_optimization(self):
-        num_stock_input = self.num_stock_entry.get()
+        num_stock_input = self.num_stock_entry.get().replace(" ", "")
 
         try:
             num_stock = int(num_stock_input)
