@@ -94,14 +94,6 @@ class MonteCarloPortfolioOptimizer:
             self.plot_data(historical_data, stock)
         plt.show()
 
-    def plot_data(self, data, stock):
-        plt.figure(figsize=(10, 6))
-        plt.plot(data["Close"], label=f"{stock} Closing Price", color="purple")
-        plt.title(f"{stock} Stock Prices Over Time")
-        plt.xlabel("Date")
-        plt.ylabel("Closing Price (USD)")
-        plt.legend(), plt.grid()
-
     def show_error_message(self, message):
         tk.messagebox.showerror("Error", message)
 
