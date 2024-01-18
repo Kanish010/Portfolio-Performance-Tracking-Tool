@@ -16,7 +16,8 @@ class PortfolioGUI:
         self.result_text = self.result_widget()
         self.feedback_label = self.feedback_widget()
         self.progress_bar = None
-        self.root.geometry("500x550")
+        self.disclaimer_label = self.disclaimer_widget()
+        self.root.geometry("500x575")
 
     def gui_style(self):
         style = ttk.Style()
@@ -44,6 +45,11 @@ class PortfolioGUI:
         feedback_label = ttk.Label(self.root, text="", foreground="cyan", font=("Calibri", 12))
         feedback_label.pack(pady=10)
         return feedback_label
+
+    def disclaimer_widget(self):
+        disclaimer_label = ttk.Label(self.root, text="Disclaimer: This is NOT financial advice.", font=("Calibri", 10), foreground="red")
+        disclaimer_label.pack(pady=10, side="bottom")  # Use pack with side option
+        return disclaimer_label
 
     def run_optimization(self):
         num_stock_input = self.num_stock_entry.get().replace(" ", "")
