@@ -1,7 +1,6 @@
 # Portfolio Optimization with Neural Networks and Monte Carlo
 This Python script provides a graphical user interface (GUI) for portfolio optimization using neural network predictions and Monte Carlo simulations. The script utilizes the Yahoo Finance API to fetch historical stock data, TensorFlow for building and training the neural network, and the scipy library for portfolio optimization.
 
-
 # Dependencies:
 Before running the script, make sure to install the required libraries by executing the following command in your terminal or command prompt:
 
