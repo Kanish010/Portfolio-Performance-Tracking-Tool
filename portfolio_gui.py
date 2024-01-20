@@ -5,6 +5,19 @@ from neural_net_optimizer import NeuralNetOptimizer
 from monte_carlo_optimizer import MonteCarloOptimizer
 
 class PortfolioGUI:
+    """
+    A graphical user interface (GUI) for portfolio optimization using neural network and Monte Carlo methods.
+
+    Attributes:
+        nn_optimizer (NeuralNetOptimizer): Instance of NeuralNetOptimizer for neural network-based optimization.
+        mc_optimizer (MonteCarloOptimizer): Instance of MonteCarloOptimizer for Monte Carlo simulation-based optimization.
+        historical_data_list (list): A list to store historical stock data.
+        root (tk.Tk): The main window of the GUI.
+        result_text (scrolledtext.ScrolledText): Text widget to display optimization results.
+        feedback_label (ttk.Label): Label to provide feedback during optimization.
+        progress_bar (ttk.Progressbar): Progress bar widget for indicating optimization progress.
+    """
+
     def __init__(self, nn_optimizer, mc_optimizer):
         self.nn_optimizer = nn_optimizer
         self.mc_optimizer = mc_optimizer
@@ -20,10 +33,16 @@ class PortfolioGUI:
         self.root.geometry("500x575")
 
     def gui_style(self):
+        """
+        Configures the style for the GUI using ttk.Style.
+        """
         style = ttk.Style()
         style.configure("TRoundButton", padding=(10, 5), font=("Calibri", 12))
 
     def input_widgets(self):
+        """
+        Creates input widgets for the number of stocks and the "Run Portfolio Optimization" button.
+        """
         num_stock_label = ttk.Label(self.root, text="Number of stocks:")
         num_stock_label.pack(pady=10)
 
@@ -37,21 +56,42 @@ class PortfolioGUI:
         run_button.pack(pady=20)
 
     def result_widget(self):
+        """
+        Creates a scrolled text widget for displaying optimization results.
+
+        Returns:
+            scrolledtext.ScrolledText: The result text widget.
+        """
         result_text = scrolledtext.ScrolledText(self.root, width=50, height=15, font=("Calibri", 12))
         result_text.pack(pady=20)
         return result_text
 
     def feedback_widget(self):
+        """
+        Creates a label for providing feedback during optimization.
+
+        Returns:
+            ttk.Label: The feedback label.
+        """
         feedback_label = ttk.Label(self.root, text="", foreground="cyan", font=("Calibri", 12))
         feedback_label.pack(pady=10)
         return feedback_label
 
     def disclaimer_widget(self):
+        """
+        Creates a label for displaying a disclaimer.
+
+        Returns:
+            ttk.Label: The disclaimer label.
+        """
         disclaimer_label = ttk.Label(self.root, text="Disclaimer: This is NOT financial advice.", font=("Calibri", 10), foreground="red")
         disclaimer_label.pack(pady=10, side="bottom")  # Use pack with side option
         return disclaimer_label
 
     def run_optimization(self):
+        """
+        Initiates portfolio optimization based on user input.
+        """
         num_stock_input = self.num_stock_entry.get().replace(" ", "")
 
         try:
@@ -71,7 +111,7 @@ class PortfolioGUI:
         try:
             invalid_label = ttk.Label(self.root, text="", foreground="red", font=("Helvetica", 12))
             self.historical_data_list = self.stock_data(num_stock, invalid_label)
-            
+
             if not self.historical_data_list:
                 invalid_label.config(text="No valid stocks entered. Please try again.")
                 return
@@ -95,6 +135,9 @@ class PortfolioGUI:
             self.enable_run_button()
 
     def disable_run_button(self):
+        """
+        Disables the "Run Portfolio Optimization" button and displays a progress bar.
+        """
         for widget in self.root.winfo_children():
             if isinstance(widget, ttk.Button):
                 widget["state"] = "disabled"
@@ -103,6 +146,9 @@ class PortfolioGUI:
         self.progress_bar.start()
 
     def enable_run_button(self):
+        """
+        Enables the "Run Portfolio Optimization" button and removes the progress bar.
+        """
         for widget in self.root.winfo_children():
             if isinstance(widget, ttk.Button):
                 widget["state"] = "normal"
@@ -110,9 +156,22 @@ class PortfolioGUI:
         self.progress_bar.destroy()
 
     def run_gui(self):
+        """
+        Starts the GUI main loop.
+        """
         self.root.mainloop()
 
     def stock_data(self, num_stock, invalid_label):
+        """
+        Collects historical data for a specified number of stocks.
+
+        Args:
+            num_stock (int): Number of stocks to collect data for.
+            invalid_label (ttk.Label): Label to display an error message.
+
+        Returns:
+            list: List of tuples containing stock symbols and their historical data.
+        """
         historical_data_list = []
 
         for _ in range(num_stock):
@@ -132,12 +191,25 @@ class PortfolioGUI:
         return historical_data_list
 
     def display_results(self, optimal_weights, title):
+        """
+        Displays the optimization results in the result text widget.
+
+        Args:
+            optimal_weights (numpy.ndarray): Optimal weights for the portfolio.
+            title (str): Title for the optimization method.
+        """
         self.result_text.insert(tk.END, f"\n{title} Portfolio:\n")
         for stock, weight in zip([stock for stock, _ in self.historical_data_list], optimal_weights):
             self.result_text.insert(tk.END, f"   {stock}: {weight:.2f}%\n")
         self.result_text.insert(tk.END, "\n")
 
     def show_error_message(self, message):
+        """
+        Displays an error message dialog.
+
+        Args:
+            message (str): The error message to display.
+        """
         tk.messagebox.showerror("Error", message)
 
 if __name__ == "__main__":

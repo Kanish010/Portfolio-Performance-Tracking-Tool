@@ -6,15 +6,40 @@ import tkinter as tk
 import matplotlib.pyplot as plt
 
 class NeuralNetOptimizer:
+    """
+    A class for portfolio optimization using neural network predictions.
+
+    Attributes:
+        historical_data_list (list): A list to store historical stock data.
+    """
+
     def __init__(self):
         self.historical_data_list = []
 
     def historical_stock_data(self, stock):
-        stock = yf.Ticker(stock)  
+        """
+        Fetches historical stock data using the Yahoo Finance API.
+
+        Args:
+            stock (str): The stock symbol.
+
+        Returns:
+            pandas.DataFrame: Historical stock data.
+        """
+        stock = yf.Ticker(stock)
         historical_data = stock.history(period="max")
         return historical_data
 
     def neuralnetwork_prediction(self, returns_list_cleaned_aligned):
+        """
+        Uses a neural network to predict future stock returns based on historical returns.
+
+        Args:
+            returns_list_cleaned_aligned (list): List of cleaned and aligned stock returns.
+
+        Returns:
+            numpy.ndarray: Predicted future stock returns.
+        """
         returns_array = np.vstack(returns_list_cleaned_aligned)
         x = returns_array[:-1, :]
         y = returns_array[1:, :]
@@ -39,6 +64,15 @@ class NeuralNetOptimizer:
         return predicted_returns.flatten()
 
     def optimal_weights(self, returns_list_cleaned_aligned):
+        """
+        Calculates optimal portfolio weights using a neural network for return predictions.
+
+        Args:
+            returns_list_cleaned_aligned (list): List of cleaned and aligned stock returns.
+
+        Returns:
+            tuple: Tuple containing optimal weights for equal allocation and optimal allocation.
+        """
         cov_matrix = np.cov(np.vstack(returns_list_cleaned_aligned))
         num_assets = len(returns_list_cleaned_aligned)
         equal_weights = np.ones(num_assets) / num_assets
@@ -59,11 +93,32 @@ class NeuralNetOptimizer:
         return optimal_weights_equal_percent, optimal_weights_optimal_percent
 
     def ML_predictions(self, weights, predicted_returns, cov_matrix):
+        """
+        Objective function for portfolio optimization using neural network predictions.
+
+        Args:
+            weights (numpy.ndarray): Portfolio weights.
+            predicted_returns (numpy.ndarray): Predicted future stock returns.
+            cov_matrix (numpy.ndarray): Covariance matrix of asset returns.
+
+        Returns:
+            float: Objective function value.
+        """
         portfolio_return = np.sum(predicted_returns * weights)
         portfolio_risk = np.sqrt(np.dot(weights.T, np.dot(cov_matrix, weights)))
         return -portfolio_return + 0.5 * portfolio_risk
 
     def stock_data(self, num_stock, invalid_label):
+        """
+        Collects historical data for a specified number of stocks.
+
+        Args:
+            num_stock (int): Number of stocks to collect data for.
+            invalid_label (tk.Label): Label to display an error message.
+
+        Returns:
+            list: List of tuples containing stock symbols and their historical data.
+        """
         historical_data_list = []
 
         for _ in range(num_stock):
@@ -83,12 +138,28 @@ class NeuralNetOptimizer:
         return historical_data_list
 
     def display_results(self, optimal_weights, title, result_text):
+        """
+        Displays the results of portfolio optimization.
+
+        Args:
+            optimal_weights (numpy.ndarray): Optimal weights for the portfolio.
+            title (str): Title for the optimization method.
+            result_text (tk.Text): Text widget to display results.
+        """
         result_text.insert(tk.END, f"\n{title} Portfolio:\n")
         for stock, weight in zip([stock for stock, _ in self.historical_data_list], optimal_weights):
             result_text.insert(tk.END, f"   {stock}: {weight:.2f}%\n")
         result_text.insert(tk.END, "\n")
 
     def portfolio_optimization(self, num_stock, invalid_label, result_text):
+        """
+        Performs portfolio optimization using neural network predictions.
+
+        Args:
+            num_stock (str): Number of stocks to consider in the portfolio.
+            invalid_label (tk.Label): Label to display an error message.
+            result_text (tk.Text): Text widget to display results.
+        """
         num_stock = int(num_stock)
         if num_stock < 2:
             self.show_error_message("Please enter a number greater than 1.")
@@ -116,6 +187,12 @@ class NeuralNetOptimizer:
         plt.show()
 
     def show_error_message(self, message):
+        """
+        Displays an error message dialog.
+
+        Args:
+            message (str): The error message to display.
+        """
         tk.messagebox.showerror("Error", message)
 
 if __name__ == "__main__":
