@@ -4,14 +4,10 @@ from scipy.optimize import minimize
 import tensorflow as tf
 import tkinter as tk
 import matplotlib.pyplot as plt
-from pypfopt.efficient_frontier import EfficientFrontier
-from pypfopt import risk_models
-from pypfopt import expected_returns
 
 class NeuralNetOptimizer:
     """
-    A class for portfolio optimization using neural network predictions, Modern Portfolio Theory (MPT),
-    and a placeholder for Reinforcement Learning (RL).
+    A class for portfolio optimization using neural network predictions.
 
     Attributes:
         historical_data_list (list): A list to store historical stock data.
@@ -75,7 +71,7 @@ class NeuralNetOptimizer:
             returns_list_cleaned_aligned (list): List of cleaned and aligned stock returns.
 
         Returns:
-            tuple: Tuple containing optimal weights for equal allocation and MPT allocation.
+            tuple: Tuple containing optimal weights for equal allocation and optimal allocation.
         """
         cov_matrix = np.cov(np.vstack(returns_list_cleaned_aligned))
         num_assets = len(returns_list_cleaned_aligned)
@@ -83,25 +79,22 @@ class NeuralNetOptimizer:
 
         predicted_returns = self.neuralnetwork_prediction(returns_list_cleaned_aligned)
 
-        result_mpt = minimize(
-            self.MPT_predictions, np.random.rand(num_assets),
+        result = minimize(
+            self.ML_predictions, np.random.rand(num_assets),
             args=(predicted_returns, cov_matrix),
             method="SLSQP", constraints=({"type": "eq", "fun": lambda w: np.sum(w) - 1},
                                           {"type": "ineq", "fun": lambda w: w}),
             bounds=[(0, 1) for _ in range(num_assets)]
         )
 
-        # Placeholder for RL-based optimization
-        optimal_weights_rl = self.optimal_weights_rl(returns_list_cleaned_aligned)
-
         optimal_weights_equal_percent = equal_weights * 100
-        optimal_weights_mpt_percent = result_mpt.x * 100
+        optimal_weights_optimal_percent = result.x * 100
 
-        return optimal_weights_equal_percent, optimal_weights_mpt_percent, optimal_weights_rl
+        return optimal_weights_equal_percent, optimal_weights_optimal_percent
 
-    def MPT_predictions(self, weights, predicted_returns, cov_matrix):
+    def ML_predictions(self, weights, predicted_returns, cov_matrix):
         """
-        Objective function for portfolio optimization using MPT.
+        Objective function for portfolio optimization using neural network predictions.
 
         Args:
             weights (numpy.ndarray): Portfolio weights.
@@ -115,48 +108,7 @@ class NeuralNetOptimizer:
         portfolio_risk = np.sqrt(np.dot(weights.T, np.dot(cov_matrix, weights)))
         return -portfolio_return + 0.5 * portfolio_risk
 
-    def optimal_weights_mpt(self, returns_list_cleaned_aligned):
-        """
-        Calculates optimal portfolio weights using Modern Portfolio Theory (MPT) for return predictions.
-
-        Args:
-            returns_list_cleaned_aligned (list): List of cleaned and aligned stock returns.
-
-        Returns:
-            tuple: Tuple containing optimal weights for equal allocation and MPT allocation.
-        """
-        cov_matrix = np.cov(np.vstack(returns_list_cleaned_aligned))
-        num_assets = len(returns_list_cleaned_aligned)
-        equal_weights = np.ones(num_assets) / num_assets
-
-        predicted_returns = self.neuralnetwork_prediction(returns_list_cleaned_aligned)
-
-        ef = EfficientFrontier(predicted_returns, cov_matrix)
-        weights_mpt = ef.max_sharpe()
-
-        optimal_weights_equal_percent = equal_weights * 100
-        optimal_weights_mpt_percent = np.array(list(weights_mpt.values())) * 100
-
-        return optimal_weights_equal_percent, optimal_weights_mpt_percent
-
-    def optimal_weights_rl(self, returns_list_cleaned_aligned):
-        """
-        Placeholder method for RL-based portfolio optimization.
-
-        Args:
-            returns_list_cleaned_aligned (list): List of cleaned and aligned stock returns.
-
-        Returns:
-            numpy.ndarray: Optimal weights for RL-based portfolio.
-        """
-        # Implement RL-based portfolio optimization using your preferred RL library
-        # Placeholder code
-        num_assets = len(returns_list_cleaned_aligned)
-        optimal_weights_rl = np.ones(num_assets) / num_assets
-
-        return optimal_weights_rl
-
-    def historical_data(self, num_stock, invalid_label):
+    def stock_data(self, num_stock, invalid_label):
         """
         Collects historical data for a specified number of stocks.
 
@@ -201,7 +153,7 @@ class NeuralNetOptimizer:
 
     def portfolio_optimization(self, num_stock, invalid_label, result_text):
         """
-        Performs portfolio optimization using neural network predictions, MPT, and RL (placeholder).
+        Performs portfolio optimization using neural network predictions.
 
         Args:
             num_stock (str): Number of stocks to consider in the portfolio.
@@ -214,7 +166,7 @@ class NeuralNetOptimizer:
             return
 
         invalid_label.config(text="")
-        self.historical_data_list = self.historical_data(num_stock, invalid_label)
+        self.historical_data_list = self.stock_data(num_stock, invalid_label)
 
         if not self.historical_data_list:
             invalid_label.config(text="No valid stocks entered. Please try again.")
@@ -224,13 +176,11 @@ class NeuralNetOptimizer:
         min_length = min(len(arr) for arr in returns_list_cleaned)
         returns_list_cleaned_aligned = [np.resize(arr, min_length) for arr in returns_list_cleaned]
 
-        # Perform MPT and RL portfolio optimization
-        optimal_weights_equal, optimal_weights_mpt, optimal_weights_rl = self.optimal_weights(returns_list_cleaned_aligned)
+        optimal_weights_equal, optimal_weights_optimal = self.optimal_weights(returns_list_cleaned_aligned)
 
         result_text.delete(1.0, tk.END)
         result_text.insert(tk.END, "🚀 Portfolio Optimization Results 🚀:\n")
-        self.display_results(optimal_weights_mpt, "MPT", result_text)
-        self.display_results(optimal_weights_rl, "RL", result_text)
+        self.display_results(optimal_weights_optimal, "Optimal", result_text)
 
         for stock, historical_data in self.historical_data_list:
             self.plot_data(historical_data, stock)
