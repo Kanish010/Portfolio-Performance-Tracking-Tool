@@ -3,7 +3,6 @@ import yfinance as yf
 from scipy.optimize import minimize
 import tensorflow as tf
 import tkinter as tk
-import matplotlib.pyplot as plt
 
 class NeuralNetOptimizer:
     """
@@ -184,7 +183,6 @@ class NeuralNetOptimizer:
 
         for stock, historical_data in self.historical_data_list:
             self.plot_data(historical_data, stock)
-        plt.show()
 
     def show_error_message(self, message):
         """
