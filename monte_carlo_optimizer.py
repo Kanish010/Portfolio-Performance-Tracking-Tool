@@ -3,7 +3,6 @@ import yfinance as yf
 from scipy.optimize import minimize
 import tkinter as tk
 from tkinter import simpledialog
-import matplotlib.pyplot as plt
 
 class MonteCarloOptimizer:
     def __init__(self):
@@ -150,7 +149,6 @@ class MonteCarloOptimizer:
 
         for stock, historical_data in self.historical_data_list:
             self.plot_data(historical_data, stock)
-        plt.show()
 
     def show_error_message(self, message):
         """
