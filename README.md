@@ -4,7 +4,7 @@ This Python script provides a graphical user interface (GUI) for portfolio optim
 # Dependencies:
 Before running the script, make sure to install the required libraries by executing the following command in your terminal or command prompt:
 
-pip install numpy yfinance scipy tensorflow tkinter matplotlib
+pip install numpy yfinance scipy tensorflow tkinter
 
 # Classes
 NeuralNetOptimizer:
