@@ -30,7 +30,7 @@ class PortfolioGUI:
         self.feedback_label = self.feedback_widget()
         self.progress_bar = None
         self.disclaimer_label = self.disclaimer_widget()
-        self.root.geometry("500x650")
+        self.root.geometry("500x575")
 
     def gui_style(self):
         """
@@ -110,7 +110,7 @@ class PortfolioGUI:
             ttk.Label: The disclaimer label.
         """
         disclaimer_label = ttk.Label(self.root, text="Disclaimer: This is NOT financial advice.", font=("Calibri", 10), foreground="red")
-        disclaimer_label.pack(pady=10, side="bottom")  # Use pack with side option
+        disclaimer_label.pack(pady=5, padx=10, side="bottom")  # Adjusted padding to reduce blank space
         return disclaimer_label
 
     def run_optimization(self):
@@ -168,7 +168,7 @@ class PortfolioGUI:
             if isinstance(widget, ttk.Button):
                 widget["state"] = "disabled"
         self.progress_bar = ttk.Progressbar(self.root, orient="horizontal", length=200, mode="indeterminate")
-        self.progress_bar.pack(pady=10)
+        self.progress_bar.pack(pady=5, padx=10)  # Adjusted padding to reduce blank space
         self.progress_bar.start()
 
     def enable_run_button(self):
