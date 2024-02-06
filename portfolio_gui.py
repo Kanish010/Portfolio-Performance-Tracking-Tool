@@ -68,11 +68,18 @@ class PortfolioGUI:
         Updates the OptionMenu when the optimization method is changed.
         """
         current_method = self.optimization_method_var.get()
-        new_options = ["Neural Network", "Monte Carlo"] if current_method == "Neural Network" else ["Monte Carlo", "Neural Network"]
-        self.optimization_method_menu['menu'].delete(0, 'end')
+        new_options = []
+        if current_method == "Neural Network":
+            new_options = ["Monte Carlo Simulation"]
+        elif current_method == "Monte Carlo Simulation":
+            new_options = ["Neural Network"]
+        else:
+            raise ValueError("Unexpected optimization method")
+
+        self.optimization_method_menu["menu"].delete(0, "end")
         for option in new_options:
-            self.optimization_method_menu['menu'].add_command(label=option, command=tk._setit(self.optimization_method_var, option))
-            
+            self.optimization_method_menu["menu"].add_command(label=option, command=tk._setit(self.optimization_method_var, option))
+
     def result_widget(self):
         """
         Creates a scrolled text widget for displaying optimization results.
