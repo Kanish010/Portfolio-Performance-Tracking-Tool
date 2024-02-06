@@ -30,7 +30,7 @@ class PortfolioGUI:
         self.feedback_label = self.feedback_widget()
         self.progress_bar = None
         self.disclaimer_label = self.disclaimer_widget()
-        self.root.geometry("500x575")
+        self.root.geometry("500x650")
 
     def gui_style(self):
         """
@@ -41,7 +41,7 @@ class PortfolioGUI:
 
     def input_widgets(self):
         """
-        Creates input widgets for the number of stocks and the "Run Portfolio Optimization" button.
+        Creates input widgets for the number of stocks, the optimization method selection, and the "Run Portfolio Optimization" button.
         """
         num_stock_label = ttk.Label(self.root, text="Number of stocks:")
         num_stock_label.pack(pady=10)
@@ -49,12 +49,33 @@ class PortfolioGUI:
         self.num_stock_entry = ttk.Entry(self.root, font=("Helvetica", 12))
         self.num_stock_entry.pack(pady=10)
 
+        optimization_method_label = ttk.Label(self.root, text="Optimization Method:")
+        optimization_method_label.pack(pady=5)
+
+        optimization_methods = ["Neural Network", "Monte Carlo"]
+        self.optimization_method_var = tk.StringVar(value=optimization_methods[0])  # Default to Neural Network
+        self.optimization_method_menu = ttk.OptionMenu(self.root, self.optimization_method_var, *optimization_methods)
+        self.optimization_method_menu.pack(pady=5)
+
         invalid_label = ttk.Label(self.root, text="", foreground="red", font=("Helvetica", 12))
         invalid_label.pack(pady=10)
 
         run_button = ttk.Button(self.root, text="Run Portfolio Optimization", command=self.run_optimization)
         run_button.pack(pady=20)
 
+        # Bind a function to the OptionMenu variable to update the menu
+        self.optimization_method_var.trace("w", self.update_option_menu)
+
+    def update_option_menu(self, *args):
+        """
+        Updates the OptionMenu when the optimization method is changed.
+        """
+        current_method = self.optimization_method_var.get()
+        new_options = ["Neural Network", "Monte Carlo"] if current_method == "Neural Network" else ["Monte Carlo", "Neural Network"]
+        self.optimization_method_menu['menu'].delete(0, 'end')
+        for option in new_options:
+            self.optimization_method_menu['menu'].add_command(label=option, command=tk._setit(self.optimization_method_var, option))
+            
     def result_widget(self):
         """
         Creates a scrolled text widget for displaying optimization results.
@@ -120,13 +141,14 @@ class PortfolioGUI:
             min_length = min(len(arr) for arr in returns_list_cleaned)
             returns_list_cleaned_aligned = [np.resize(arr, min_length) for arr in returns_list_cleaned]
 
-            # Neural Net Optimization
-            optimal_weights_nn = self.nn_optimizer.optimal_weights(returns_list_cleaned_aligned)[1]
-            self.display_results(optimal_weights_nn, "Neural Net Optimized")
-
-            # Monte Carlo Optimization
-            optimal_weights_mc = self.mc_optimizer.monte_carlo(returns_list_cleaned_aligned)
-            self.display_results(optimal_weights_mc, "Monte Carlo Optimized")
+            if self.optimization_method_var.get() == "Neural Network":
+                # Neural Net Optimization
+                optimal_weights_nn = self.nn_optimizer.optimal_weights(returns_list_cleaned_aligned)[1]
+                self.display_results(optimal_weights_nn, "Neural Net Optimized")
+            elif self.optimization_method_var.get() == "Monte Carlo":
+                # Monte Carlo Optimization
+                optimal_weights_mc = self.mc_optimizer.monte_carlo(returns_list_cleaned_aligned)
+                self.display_results(optimal_weights_mc, "Monte Carlo Optimized")
 
             self.feedback_label.config(text="Optimization completed successfully.")
         except Exception as e:
