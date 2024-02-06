@@ -58,7 +58,7 @@ class PortfolioGUI:
         invalid_label.pack(pady=10)
 
         run_button = ttk.Button(self.root, text="Run Portfolio Optimization", command=self.run_optimization)
-        run_button.pack(pady=20)
+        run_button.pack(pady=5, padx=10)  # Adjusted padding to reduce blank space
 
         # Bind a function to the OptionMenu variable to update the menu
         self.optimization_method_var.trace("w", self.update_option_menu)
