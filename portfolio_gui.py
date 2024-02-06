@@ -49,10 +49,7 @@ class PortfolioGUI:
         self.num_stock_entry = ttk.Entry(self.root, font=("Helvetica", 12))
         self.num_stock_entry.pack(pady=10)
 
-        optimization_method_label = ttk.Label(self.root, text="Optimization Method:")
-        optimization_method_label.pack(pady=5)
-
-        optimization_methods = ["Choose Method", "Neural Network", "Monte Carlo"]
+        optimization_methods = ["Choose Optimization Method", "Neural Network", "Monte Carlo Simulation"]
         self.optimization_method_var = tk.StringVar(value=optimization_methods[0])  
         self.optimization_method_menu = ttk.OptionMenu(self.root, self.optimization_method_var, *optimization_methods)
         self.optimization_method_menu.pack(pady=5)
