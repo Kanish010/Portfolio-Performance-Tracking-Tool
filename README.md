@@ -14,7 +14,7 @@ MonteCarloOptimizer:
 The MonteCarloOptimizer class implements methods for fetching historical stock data, performing Monte Carlo simulations for portfolio optimization, and displaying results.
 
 PortfolioGUI:
-The PortfolioGUI class provides a graphical user interface for users to input the number of stocks and initiate the portfolio optimization process. It utilizes instances of NeuralNetOptimizer and MonteCarloOptimizer to perform optimization and displays results in a scrollable text widget.
+The PortfolioGUI class provides a graphical user interface for users to input the number of stocks and initiate the portfolio optimization process. It utilizes instances of NeuralNetOptimizer and MonteCarloOptimizer to perform optimization and displays results in a scrollable text widget. Allows the user to choose between using the Neural Network or the Monte Carlo Simulation through a widget on the GUI. 
 
 # Disclaimer
 This script is provided for educational purposes only and should not be considered as financial advice. Always conduct thorough research and consult with financial professionals before making investment decisions.
