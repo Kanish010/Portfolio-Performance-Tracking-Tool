@@ -56,7 +56,7 @@ class NeuralNetOptimizer:
             tf.keras.layers.Dropout(0.1),
             tf.keras.layers.Dense(1)
         ])
-        model.compile(optimizer=tf.keras.optimizers.legacy.Adam(learning_rate=0.001), loss="mse")
+        model.compile(optimizer=tf.keras.optimizers.legacy.Adam(learning_rate=0.0001), loss="mse")
         model.fit(x, y, epochs=250, verbose=0)
 
         predicted_returns = model.predict(x[-1:, :])
