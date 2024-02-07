@@ -3,14 +3,16 @@ from tkinter import ttk, scrolledtext, simpledialog, messagebox
 import numpy as np
 from neural_net_optimizer import NeuralNetOptimizer
 from monte_carlo_optimizer import MonteCarloOptimizer
+from quantum_comp_optimizer import QuantumAnnealingOptimizer  # Import the QuantumAnnealingOptimizer class
 
 class PortfolioGUI:
     """
-    A graphical user interface (GUI) for portfolio optimization using neural network and Monte Carlo methods.
+    A graphical user interface (GUI) for portfolio optimization using neural network, Monte Carlo, and quantum annealing methods.
 
     Attributes:
         nn_optimizer (NeuralNetOptimizer): Instance of NeuralNetOptimizer for neural network-based optimization.
         mc_optimizer (MonteCarloOptimizer): Instance of MonteCarloOptimizer for Monte Carlo simulation-based optimization.
+        qa_optimizer (QuantumAnnealingOptimizer): Instance of QuantumAnnealingOptimizer for quantum annealing-based optimization.
         historical_data_list (list): A list to store historical stock data.
         root (tk.Tk): The main window of the GUI.
         result_text (scrolledtext.ScrolledText): Text widget to display optimization results.
@@ -18,9 +20,10 @@ class PortfolioGUI:
         progress_bar (ttk.Progressbar): Progress bar widget for indicating optimization progress.
     """
 
-    def __init__(self, nn_optimizer, mc_optimizer):
+    def __init__(self, nn_optimizer, mc_optimizer, qa_optimizer):
         self.nn_optimizer = nn_optimizer
         self.mc_optimizer = mc_optimizer
+        self.qa_optimizer = qa_optimizer  # Initialize the QuantumAnnealingOptimizer instance
         self.historical_data_list = []
         self.root = tk.Tk()
         self.root.title("Portfolio Optimization GUI")
@@ -49,7 +52,7 @@ class PortfolioGUI:
         self.num_stock_entry = ttk.Entry(self.root, font=("Helvetica", 12))
         self.num_stock_entry.pack(pady=10)
 
-        optimization_methods = ["Choose Optimization Method", "Neural Network", "Monte Carlo Simulation"]
+        optimization_methods = ["Choose Optimization Method", "Neural Network", "Monte Carlo Simulation", "Quantum Annealing"]  # Add "Quantum Annealing" option
         self.optimization_method_var = tk.StringVar(value=optimization_methods[0])  
         self.optimization_method_menu = ttk.OptionMenu(self.root, self.optimization_method_var, *optimization_methods)
         self.optimization_method_menu.pack(pady=5)
@@ -70,9 +73,11 @@ class PortfolioGUI:
         current_method = self.optimization_method_var.get()
         new_options = []
         if current_method == "Neural Network":
-            new_options = ["Monte Carlo Simulation"]
+            new_options = ["Monte Carlo Simulation", "Quantum Annealing"]
         elif current_method == "Monte Carlo Simulation":
-            new_options = ["Neural Network"]
+            new_options = ["Neural Network", "Quantum Annealing"]
+        elif current_method == "Quantum Annealing":
+            new_options = ["Neural Network", "Monte Carlo Simulation"]
         else:
             raise ValueError("Unexpected optimization method")
 
@@ -153,6 +158,11 @@ class PortfolioGUI:
                 # Monte Carlo Optimization
                 optimal_weights_mc = self.mc_optimizer.monte_carlo(returns_list_cleaned_aligned)
                 self.display_results(optimal_weights_mc, "Monte Carlo Optimized")
+            elif self.optimization_method_var.get() == "Quantum Annealing":
+                # Quantum Annealing Optimization
+                cov_matrix = self.covariance_matrix(returns_list_cleaned_aligned)
+                optimal_weights_qa = self.qa_optimizer.quantum_annealing_portfolio_optimization(cov_matrix)
+                self.display_results(optimal_weights_qa, "Quantum Annealing Optimized")
 
             self.feedback_label.config(text="Optimization completed successfully.")
         except Exception as e:
@@ -241,5 +251,6 @@ class PortfolioGUI:
 if __name__ == "__main__":
     nn_optimizer = NeuralNetOptimizer()
     mc_optimizer = MonteCarloOptimizer()
-    gui = PortfolioGUI(nn_optimizer, mc_optimizer)
+    qa_optimizer = QuantumAnnealingOptimizer()  # Initialize the QuantumAnnealingOptimizer instance
+    gui = PortfolioGUI(nn_optimizer, mc_optimizer, qa_optimizer)
     gui.run_gui()
