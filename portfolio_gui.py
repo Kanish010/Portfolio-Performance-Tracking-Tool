@@ -149,7 +149,7 @@ class PortfolioGUI:
                 # Neural Net Optimization
                 optimal_weights_nn = self.nn_optimizer.optimal_weights(returns_list_cleaned_aligned)[1]
                 self.display_results(optimal_weights_nn, "Neural Net Optimized")
-            elif self.optimization_method_var.get() == "Monte Carlo":
+            elif self.optimization_method_var.get() == "Monte Carlo Simulation":
                 # Monte Carlo Optimization
                 optimal_weights_mc = self.mc_optimizer.monte_carlo(returns_list_cleaned_aligned)
                 self.display_results(optimal_weights_mc, "Monte Carlo Optimized")
