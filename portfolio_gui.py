@@ -3,7 +3,7 @@ from tkinter import ttk, scrolledtext, simpledialog, messagebox
 import numpy as np
 from neural_net_optimizer import NeuralNetOptimizer
 from monte_carlo_optimizer import MonteCarloOptimizer
-from quantum_comp_optimizer import QuantumAnnealingOptimizer  # Import the QuantumAnnealingOptimizer class
+from quantum_comp_optimizer import QuantumAnnealingOptimizer 
 
 class PortfolioGUI:
     """
@@ -160,13 +160,14 @@ class PortfolioGUI:
                 self.display_results(optimal_weights_mc, "Monte Carlo Optimized")
             elif self.optimization_method_var.get() == "Quantum Annealing":
                 # Quantum Annealing Optimization
-                cov_matrix = self.covariance_matrix(returns_list_cleaned_aligned)
+                cov_matrix = self.qa_optimizer.covariance_matrix(returns_list_cleaned_aligned)
                 optimal_weights_qa = self.qa_optimizer.quantum_annealing_portfolio_optimization(cov_matrix)
                 self.display_results(optimal_weights_qa, "Quantum Annealing Optimized")
 
             self.feedback_label.config(text="Optimization completed successfully.")
         except Exception as e:
             self.feedback_label.config(text=f"Error during optimization: {str(e)}")
+            print (f"Error during optimization: {str(e)}")
         finally:
             self.enable_run_button()
 
@@ -251,6 +252,6 @@ class PortfolioGUI:
 if __name__ == "__main__":
     nn_optimizer = NeuralNetOptimizer()
     mc_optimizer = MonteCarloOptimizer()
-    qa_optimizer = QuantumAnnealingOptimizer()  # Initialize the QuantumAnnealingOptimizer instance
+    qa_optimizer = QuantumAnnealingOptimizer() 
     gui = PortfolioGUI(nn_optimizer, mc_optimizer, qa_optimizer)
     gui.run_gui()
