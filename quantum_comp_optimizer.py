@@ -4,7 +4,7 @@ from qiskit.algorithms import QAOA
 from qiskit.algorithms.optimizers import COBYLA
 from qiskit import Aer, execute
 import tkinter as tk
-from tkinter import simpledialog, messagebox
+from tkinter import messagebox
 
 class QuantumAnnealingOptimizer:
     """
