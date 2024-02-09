@@ -1,8 +1,7 @@
 import numpy as np
 import yfinance as yf
-from qiskit.algorithms import QAOA
-from qiskit.algorithms.optimizers import COBYLA
-from qiskit import Aer, execute
+import cirq
+from scipy.optimize import minimize
 import tkinter as tk
 from tkinter import messagebox
 
@@ -13,84 +12,6 @@ class QuantumAnnealingOptimizer:
 
     def __init__(self):
         self.historical_data_list = []
-
-    def calculate_energy(self, qubo, solution):
-        """
-        Calculates the energy of a solution for a given QUBO matrix.
-
-        Args:
-            qubo (numpy.ndarray): Quadratic unconstrained binary optimization problem.
-            solution (numpy.ndarray): Binary solution vector.
-
-        Returns:
-            float: Energy of the solution.
-        """
-        return np.dot(solution, np.dot(qubo, solution))
-
-    def generate_neighbor(self, solution):
-        """
-        Generates a neighboring solution by flipping multiple random bits.
-
-        Args:
-            solution (numpy.ndarray): Binary solution vector.
-
-        Returns:
-            numpy.ndarray: Neighboring solution.
-        """
-        neighbor_solution = solution.copy()
-        flip_indices = np.random.choice(len(solution), size=len(solution) // 2, replace=False)
-        neighbor_solution[flip_indices] = 1 - neighbor_solution[flip_indices]
-        return neighbor_solution
-
-    def simulated_annealing(self, qubo, num_iterations=5000, initial_temperature=1.0):
-        """
-        Performs simulated annealing optimization.
-
-        Args:
-            qubo (numpy.ndarray): Quadratic unconstrained binary optimization problem.
-            num_iterations (int): Number of iterations for simulated annealing.
-            initial_temperature (float): Initial temperature for simulated annealing.
-
-        Returns:
-            numpy.ndarray: Optimal solution found by simulated annealing.
-        """
-        num_variables = len(qubo)
-        current_solution = np.ones(num_variables) / num_variables  # Initialize with equal weights
-        current_energy = self.calculate_energy(qubo, current_solution)
-        temperature = initial_temperature
-
-        # Simulated Annealing algorithm
-        for _ in range(num_iterations):
-            # Generate a random neighboring solution
-            neighbor_solution = self.generate_neighbor(current_solution)
-            neighbor_energy = self.calculate_energy(qubo, neighbor_solution)
-
-            # If the neighbor solution is better or with probability exp(-delta_E / T),
-            # accept the neighbor solution
-            if neighbor_energy < current_energy or np.random.rand() < np.exp(-(neighbor_energy - current_energy) / temperature):
-                current_solution = neighbor_solution
-                current_energy = neighbor_energy
-            
-            # Update temperature using geometric cooling schedule
-            temperature *= 0.95 ** (_ / num_iterations)
-
-        return current_solution
-
-    def generate_neighbor(self, solution):
-        """
-        Generates a neighboring solution by randomly perturbing the current solution.
-
-        Args:
-            solution (numpy.ndarray): Current solution vector.
-
-        Returns:
-            numpy.ndarray: Neighboring solution.
-        """
-        perturbation = np.random.uniform(-0.05, 0.05, size=len(solution))
-        neighbor_solution = solution + perturbation
-        # Normalize the solution to ensure it sums to 1
-        neighbor_solution /= np.sum(neighbor_solution)
-        return neighbor_solution
 
     def covariance_matrix(self, returns_list_cleaned_aligned):
         """
@@ -104,30 +25,50 @@ class QuantumAnnealingOptimizer:
         """
         return np.cov(np.vstack(returns_list_cleaned_aligned))
 
-    def quantum_annealing_portfolio_optimization(self, covariance_matrix, num_iterations=5000):
+    def quantum_portfolio_optimization(self, covariance_matrix):
         """
         Performs portfolio optimization using quantum annealing.
 
         Args:
             covariance_matrix (numpy.ndarray): Covariance matrix of asset returns.
-            num_iterations (int): Number of iterations for simulated annealing.
 
         Returns:
             numpy.ndarray: Optimal weights for the portfolio.
         """
-        # Construct the Ising model Hamiltonian
         num_assets = len(covariance_matrix)
-        qubo = np.zeros((num_assets, num_assets))
+        qubits = [cirq.GridQubit(0, i) for i in range(num_assets)]
+        
+        # Set up quantum circuit
+        circuit = cirq.Circuit()
         for i in range(num_assets):
-            for j in range(i, num_assets):
-                qubo[i, j] = covariance_matrix[i, j]
-                qubo[j, i] = covariance_matrix[i, j]
+            circuit.append(cirq.H(qubits[i]))  # Apply Hadamard gate to each qubit
+            circuit.append(cirq.measure(qubits[i], key='m'+str(i)))  # Measure each qubit
 
-        # Perform quantum annealing (or simulated annealing) to find the optimal solution
-        result = self.simulated_annealing(qubo, num_iterations)
+        # Define the cost function
+        def cost_function(weights):
+            return np.dot(weights.T, np.dot(covariance_matrix, weights))
 
-        # Normalize the weights to add up to 100%
-        optimal_weights = result / np.sum(result)
+        # Define the quantum annealing objective function
+        def objective_function(params):
+            resolver = cirq.ParamResolver({'theta_' + str(i): params[i] for i in range(num_assets)})
+            sim = cirq.Simulator()
+            result = sim.run(circuit, resolver, repetitions=1000)  # Run the circuit multiple times to get measurements
+            measurements = np.array([result.measurements['m'+str(i)] for i in range(num_assets)])  # Extract measurements
+            weights = np.mean(measurements, axis=1)  # Calculate the mean of measurements
+            return cost_function(weights)
+
+        # Initial guess for parameters (angles)
+        initial_guess = np.random.uniform(0, 2 * np.pi, num_assets)
+
+        # Minimize the objective function to find optimal parameters
+        result = minimize(objective_function, initial_guess, method='COBYLA')
+
+        # Use the optimal parameters to calculate the optimal weights
+        resolver = cirq.ParamResolver({'theta_' + str(i): result.x[i] for i in range(num_assets)})
+        sim = cirq.Simulator()
+        result = sim.run(circuit, resolver, repetitions=1000)  # Run the circuit multiple times to get measurements
+        measurements = np.array([result.measurements['m'+str(i)] for i in range(num_assets)])  # Extract measurements
+        optimal_weights = np.mean(measurements, axis=1)  # Calculate the mean of measurements
 
         return optimal_weights
 
@@ -157,7 +98,7 @@ class QuantumAnnealingOptimizer:
         returns_list_cleaned_aligned = [np.resize(arr, min_length) for arr in returns_list_cleaned]
 
         cov_matrix = self.covariance_matrix(returns_list_cleaned_aligned)
-        optimal_weights = self.quantum_annealing_portfolio_optimization(cov_matrix)
+        optimal_weights = self.quantum_portfolio_optimization(cov_matrix)
 
         result_text.delete(1.0, tk.END)
         result_text.insert(tk.END, "🚀 Portfolio Optimization Results 🚀:\n")
