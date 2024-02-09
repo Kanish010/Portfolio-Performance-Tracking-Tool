@@ -14,23 +14,87 @@ class QuantumAnnealingOptimizer:
     def __init__(self):
         self.historical_data_list = []
 
-    def historical_stock_data(self, stock):
+    def calculate_energy(self, qubo, solution):
         """
-        Fetches historical stock data using the Yahoo Finance API.
+        Calculates the energy of a solution for a given QUBO matrix.
 
         Args:
-            stock (str): The stock symbol.
+            qubo (numpy.ndarray): Quadratic unconstrained binary optimization problem.
+            solution (numpy.ndarray): Binary solution vector.
 
         Returns:
-            pandas.DataFrame: Historical stock data.
+            float: Energy of the solution.
         """
-        stock = yf.Ticker(stock)
-        historical_data = stock.history(period="max")
-        return historical_data
+        return np.dot(solution, np.dot(qubo, solution))
+
+    def generate_neighbor(self, solution):
+        """
+        Generates a neighboring solution by flipping multiple random bits.
+
+        Args:
+            solution (numpy.ndarray): Binary solution vector.
+
+        Returns:
+            numpy.ndarray: Neighboring solution.
+        """
+        neighbor_solution = solution.copy()
+        flip_indices = np.random.choice(len(solution), size=len(solution) // 2, replace=False)
+        neighbor_solution[flip_indices] = 1 - neighbor_solution[flip_indices]
+        return neighbor_solution
+
+    def simulated_annealing(self, qubo, num_iterations=5000, initial_temperature=1.0):
+        """
+        Performs simulated annealing optimization.
+
+        Args:
+            qubo (numpy.ndarray): Quadratic unconstrained binary optimization problem.
+            num_iterations (int): Number of iterations for simulated annealing.
+            initial_temperature (float): Initial temperature for simulated annealing.
+
+        Returns:
+            numpy.ndarray: Optimal solution found by simulated annealing.
+        """
+        num_variables = len(qubo)
+        current_solution = np.ones(num_variables) / num_variables  # Initialize with equal weights
+        current_energy = self.calculate_energy(qubo, current_solution)
+        temperature = initial_temperature
+
+        # Simulated Annealing algorithm
+        for _ in range(num_iterations):
+            # Generate a random neighboring solution
+            neighbor_solution = self.generate_neighbor(current_solution)
+            neighbor_energy = self.calculate_energy(qubo, neighbor_solution)
+
+            # If the neighbor solution is better or with probability exp(-delta_E / T),
+            # accept the neighbor solution
+            if neighbor_energy < current_energy or np.random.rand() < np.exp(-(neighbor_energy - current_energy) / temperature):
+                current_solution = neighbor_solution
+                current_energy = neighbor_energy
+            
+            # Update temperature using geometric cooling schedule
+            temperature *= 0.95 ** (_ / num_iterations)
+
+        return current_solution
+
+    def generate_neighbor(self, solution):
+        """
+        Generates a neighboring solution by randomly perturbing the current solution.
+
+        Args:
+            solution (numpy.ndarray): Current solution vector.
+
+        Returns:
+            numpy.ndarray: Neighboring solution.
+        """
+        perturbation = np.random.uniform(-0.05, 0.05, size=len(solution))
+        neighbor_solution = solution + perturbation
+        # Normalize the solution to ensure it sums to 1
+        neighbor_solution /= np.sum(neighbor_solution)
+        return neighbor_solution
 
     def covariance_matrix(self, returns_list_cleaned_aligned):
         """
-        Computes the covariance matrix of stock returns.
+        Calculates the covariance matrix of asset returns.
 
         Args:
             returns_list_cleaned_aligned (list): List of cleaned and aligned stock returns.
@@ -38,85 +102,34 @@ class QuantumAnnealingOptimizer:
         Returns:
             numpy.ndarray: Covariance matrix of asset returns.
         """
-        returns_array = np.vstack(returns_list_cleaned_aligned)
-        return np.cov(returns_array)
+        return np.cov(np.vstack(returns_list_cleaned_aligned))
 
-    def quantum_annealing_portfolio_optimization(self, cov_matrix):
+    def quantum_annealing_portfolio_optimization(self, covariance_matrix, num_iterations=5000):
         """
         Performs portfolio optimization using quantum annealing.
 
         Args:
-            cov_matrix (numpy.ndarray): Covariance matrix of asset returns.
+            covariance_matrix (numpy.ndarray): Covariance matrix of asset returns.
+            num_iterations (int): Number of iterations for simulated annealing.
 
         Returns:
             numpy.ndarray: Optimal weights for the portfolio.
         """
-        # Define the objective function (e.g., minimizing portfolio risk)
-        # Define the objective function (e.g., minimizing portfolio risk)
-        num_assets = len(cov_matrix)
+        # Construct the Ising model Hamiltonian
+        num_assets = len(covariance_matrix)
         qubo = np.zeros((num_assets, num_assets))
         for i in range(num_assets):
             for j in range(i, num_assets):
-                qubo[i, j] = cov_matrix[i, j]
-                qubo[j, i] = cov_matrix[i, j]
+                qubo[i, j] = covariance_matrix[i, j]
+                qubo[j, i] = covariance_matrix[i, j]
 
-        # Set up QAOA
-        optimizer = COBYLA()
-        qaoa = QAOA(reps=1, optimizer=optimizer)
+        # Perform quantum annealing (or simulated annealing) to find the optimal solution
+        result = self.simulated_annealing(qubo, num_iterations)
 
-        # Choose a quantum simulator or real quantum device
-        backend = Aer.get_backend('qasm_simulator')
-
-        # Execute the quantum circuit
-        result = qaoa.compute_minimum_eigenvalue(qubo)
-
-        # Extract results
-        optimal_weights = result.eigenstate
+        # Normalize the weights to add up to 100%
+        optimal_weights = result / np.sum(result)
 
         return optimal_weights
-
-    def stock_data(self, num_stock, invalid_label):
-        """
-        Collects historical data for a specified number of stocks.
-
-        Args:
-            num_stock (int): Number of stocks to collect data for.
-            invalid_label (ttk.Label): Label to display an error message.
-
-        Returns:
-            list: List of tuples containing stock symbols and their historical data.
-        """
-        historical_data_list = []
-
-        for _ in range(num_stock):
-            while True:
-                stock = simpledialog.askstring("Enter Stock Symbol", "Enter the stock symbol: ")
-                if not stock:
-                    break
-
-                stock = stock.upper().replace(" ", "")
-                historical_data = self.historical_stock_data(stock)
-                if not historical_data.empty:
-                    historical_data_list.append((stock, historical_data))
-                    break
-                else:
-                    self.show_error_message(f"Invalid stock ticker or no data available for {stock}. Please choose again.")
-
-        return historical_data_list
-
-    def display_results(self, optimal_weights, title, result_text):
-        """
-        Displays the optimization results in the result text widget.
-
-        Args:
-            optimal_weights (numpy.ndarray): Optimal weights for the portfolio.
-            title (str): Title for the optimization method.
-            result_text (tk.Text): Text widget to display results.
-        """
-        result_text.insert(tk.END, f"\n{title} Portfolio:\n")
-        for stock, weight in zip([stock for stock, _ in self.historical_data_list], optimal_weights):
-            result_text.insert(tk.END, f"   {stock}: {weight:.2f}%\n")
-        result_text.insert(tk.END, "\n")
 
     def portfolio_optimization(self, num_stock, invalid_label, result_text):
         """
@@ -157,7 +170,7 @@ class QuantumAnnealingOptimizer:
         Args:
             message (str): The error message to display.
         """
-        tk.messagebox.showerror("Error", message)
+        messagebox.showerror("Error", message)
 
 if __name__ == "__main__":
     optimizer = QuantumAnnealingOptimizer()
