@@ -161,7 +161,7 @@ class PortfolioGUI:
             elif self.optimization_method_var.get() == "Quantum Annealing":
                 # Quantum Annealing Optimization
                 cov_matrix = self.qa_optimizer.covariance_matrix(returns_list_cleaned_aligned)
-                optimal_weights_qa = self.qa_optimizer.quantum_annealing_portfolio_optimization(cov_matrix)
+                optimal_weights_qa = self.qa_optimizer.quantum_portfolio_optimization(cov_matrix)
                 self.display_results(optimal_weights_qa, "Quantum Annealing Optimized")
 
             self.feedback_label.config(text="Optimization completed successfully.")
@@ -235,8 +235,14 @@ class PortfolioGUI:
             optimal_weights (numpy.ndarray): Optimal weights for the portfolio.
             title (str): Title for the optimization method.
         """
+        if isinstance(optimal_weights, np.ndarray):
+            optimal_weights = optimal_weights.flatten()  # Flatten the array if necessary
+
+        total_weight = np.sum(optimal_weights)
+        normalized_weights = (optimal_weights / total_weight) * 100
+
         self.result_text.insert(tk.END, f"\n{title} Portfolio:\n")
-        for stock, weight in zip([stock for stock, _ in self.historical_data_list], optimal_weights):
+        for stock, weight in zip([stock for stock, _ in self.historical_data_list], normalized_weights):
             self.result_text.insert(tk.END, f"   {stock}: {weight:.2f}%\n")
         self.result_text.insert(tk.END, "\n")
 
