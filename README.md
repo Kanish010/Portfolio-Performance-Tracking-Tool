@@ -4,7 +4,7 @@ This Python script provides a graphical user interface (GUI) for portfolio optim
 # Dependencies:
 Before running the script, make sure to install the required libraries by executing the following command in your terminal or command prompt:
 
-pip install numpy yfinance scipy tensorflow tkinter
+pip install numpy yfinance scipy tensorflow tkinter cirq
 
 # Classes
 NeuralNetOptimizer:
@@ -12,6 +12,9 @@ The NeuralNetOptimizer class contains methods for fetching historical stock data
 
 MonteCarloOptimizer:
 The MonteCarloOptimizer class implements methods for fetching historical stock data, performing Monte Carlo simulations for portfolio optimization, and displaying results.
+
+QuantumAnnealingOptimizer:
+The QuantumAnnealingOptimizer class levrages quantum computing techniques, aims to find optimal portfolio weights efficiently, potentially offering advantages over classical methods. 
 
 PortfolioGUI:
 The PortfolioGUI class provides a graphical user interface for users to input the number of stocks and initiate the portfolio optimization process. It utilizes instances of NeuralNetOptimizer and MonteCarloOptimizer to perform optimization and displays results in a scrollable text widget. Allows the user to choose between using the Neural Network or the Monte Carlo Simulation through a widget on the GUI. 
