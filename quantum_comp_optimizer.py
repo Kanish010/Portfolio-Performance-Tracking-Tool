@@ -41,7 +41,7 @@ class QuantumAnnealingOptimizer:
         circuit = cirq.Circuit()
         for i in range(num_assets):
             circuit.append(cirq.H(qubits[i]))  # Apply Hadamard gate to each qubit
-            circuit.append(cirq.measure(qubits[i], key='m'+str(i)))  # Measure each qubit
+            circuit.append(cirq.measure(qubits[i], key="m"+str(i)))  # Measure each qubit
 
         # Define the cost function
         def cost_function(weights):
@@ -49,10 +49,10 @@ class QuantumAnnealingOptimizer:
 
         # Define the quantum annealing objective function
         def objective_function(params):
-            resolver = cirq.ParamResolver({'theta_' + str(i): params[i] for i in range(num_assets)})
+            resolver = cirq.ParamResolver({"theta_" + str(i): params[i] for i in range(num_assets)})
             sim = cirq.Simulator()
             result = sim.run(circuit, resolver, repetitions=1000)  # Run the circuit multiple times to get measurements
-            measurements = np.array([result.measurements['m'+str(i)] for i in range(num_assets)])  # Extract measurements
+            measurements = np.array([result.measurements["m"+str(i)] for i in range(num_assets)])  # Extract measurements
             weights = np.mean(measurements, axis=1)  # Calculate the mean of measurements
             return cost_function(weights)
 
@@ -60,13 +60,13 @@ class QuantumAnnealingOptimizer:
         initial_guess = np.random.uniform(0, 2 * np.pi, num_assets)
 
         # Minimize the objective function to find optimal parameters
-        result = minimize(objective_function, initial_guess, method='COBYLA')
+        result = minimize(objective_function, initial_guess, method="COBYLA")
 
         # Use the optimal parameters to calculate the optimal weights
-        resolver = cirq.ParamResolver({'theta_' + str(i): result.x[i] for i in range(num_assets)})
+        resolver = cirq.ParamResolver({"theta_" + str(i): result.x[i] for i in range(num_assets)})
         sim = cirq.Simulator()
         result = sim.run(circuit, resolver, repetitions=1000)  # Run the circuit multiple times to get measurements
-        measurements = np.array([result.measurements['m'+str(i)] for i in range(num_assets)])  # Extract measurements
+        measurements = np.array([result.measurements["m"+str(i)] for i in range(num_assets)])  # Extract measurements
         optimal_weights = np.mean(measurements, axis=1)  # Calculate the mean of measurements
 
         return optimal_weights
