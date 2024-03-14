@@ -7,16 +7,16 @@ Before running the script, make sure to install the required libraries by execut
 pip install numpy yfinance scipy tensorflow tkinter cirq
 
 # Classes
-NeuralNetOptimizer:
+### NeuralNetOptimizer:
 The NeuralNetOptimizer class contains methods for fetching historical stock data, building and training a neural network, and performing portfolio optimization based on neural network predictions.
 
-MonteCarloOptimizer:
+### MonteCarloOptimizer:
 The MonteCarloOptimizer class implements methods for fetching historical stock data, performing Monte Carlo simulations for portfolio optimization, and displaying results.
 
-QuantumAnnealingOptimizer:
+### QuantumAnnealingOptimizer:
 The QuantumAnnealingOptimizer class levrages quantum computing techniques, aims to find optimal portfolio weights efficiently, potentially offering advantages over classical methods. 
 
-PortfolioGUI:
+### PortfolioGUI:
 The PortfolioGUI class provides a graphical user interface for users to input the number of stocks and initiate the portfolio optimization process. It utilizes instances of NeuralNetOptimizer and MonteCarloOptimizer to perform optimization and displays results in a scrollable text widget. Allows the user to choose between using the Neural Network or the Monte Carlo Simulation through a widget on the GUI. 
 
 # Disclaimer
