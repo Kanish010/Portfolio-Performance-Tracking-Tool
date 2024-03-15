@@ -32,5 +32,3 @@ CREATE TABLE PortfolioComposition (
     FOREIGN KEY (PortfolioID) REFERENCES Portfolio(PortfolioID),
     FOREIGN KEY (StockID) REFERENCES Stock(StockID)
 );
-
-
