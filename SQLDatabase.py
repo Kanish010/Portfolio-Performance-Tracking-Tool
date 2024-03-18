@@ -36,7 +36,7 @@ class DatabaseManager:
             self.cursor = self.connection.cursor()
             print("Connected to MySQL database successfully.")
         except mysql.connector.Error as err:
-            print(f"Error: {err}")
+            print(f"Error connecting to MySQL database: {err}")
 
     def disconnect(self):
         if self.connection:
@@ -86,7 +86,7 @@ if __name__ == "__main__":
     db_manager = DatabaseManager(
         host="localhost",
         user="root",
-        password="password",
+        password="5g6JVu32Dj",
         database="Portfolio_Optimization",
     )
 
