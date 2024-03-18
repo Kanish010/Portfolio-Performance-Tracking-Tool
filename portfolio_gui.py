@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, scrolledtext, simpledialog, messagebox
 import numpy as np
+import mysql.connector
 from neural_net_optimizer import NeuralNetOptimizer
 from monte_carlo_optimizer import MonteCarloOptimizer
 from quantum_comp_optimizer import QuantumAnnealingOptimizer 
@@ -200,7 +201,7 @@ class PortfolioGUI:
 
     def stock_data(self, num_stock, invalid_label):
         """
-        Collects historical data for a specified number of stocks.
+        Collects historical data for a specified number of stocks and saves the stock symbols to a MySQL database.
 
         Args:
             num_stock (int): Number of stocks to collect data for.
@@ -210,6 +211,16 @@ class PortfolioGUI:
             list: List of tuples containing stock symbols and their historical data.
         """
         historical_data_list = []
+
+        # Add your MySQL database connection details
+        db_connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="5g6JVu32Dj",
+            database="Portfolio_Optimization"
+        )
+
+        cursor = db_connection.cursor()
 
         for _ in range(num_stock):
             while True:
@@ -221,9 +232,21 @@ class PortfolioGUI:
                 historical_data = self.nn_optimizer.historical_stock_data(stock)
                 if not historical_data.empty:
                     historical_data_list.append((stock, historical_data))
+
+                    # Use the closing price as the default market price
+                    default_market_price = historical_data['Close'].iloc[-1]
+
+                    # Insert the stock symbol into the database with the closing price as 'MarketPrice'
+                    sql = "INSERT INTO Stock (symbol, MarketPrice) VALUES (%s, %s)"
+                    cursor.execute(sql, (stock, default_market_price))
+                    db_connection.commit()
+
                     break
                 else:
                     self.show_error_message(f"Invalid stock ticker or no data available for {stock}. Please choose again.")
+
+        cursor.close()
+        db_connection.close()
 
         return historical_data_list
 
