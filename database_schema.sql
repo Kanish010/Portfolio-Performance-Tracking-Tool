@@ -18,7 +18,6 @@ CREATE TABLE HistoricalData (
 CREATE TABLE Portfolio (
     PortfolioID INT PRIMARY KEY AUTO_INCREMENT,
     Name VARCHAR(50) NOT NULL,
-    Description TEXT,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
