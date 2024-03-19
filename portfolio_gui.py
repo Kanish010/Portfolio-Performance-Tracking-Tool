@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, scrolledtext, simpledialog, messagebox
 import numpy as np
-from SQLConnector import DatabaseManager
+from SQL_connector import DatabaseManager
 from neural_net_optimizer import NeuralNetOptimizer
 from monte_carlo_optimizer import MonteCarloOptimizer
 from quantum_comp_optimizer import QuantumAnnealingOptimizer 
