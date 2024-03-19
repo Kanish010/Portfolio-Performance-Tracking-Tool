@@ -156,24 +156,22 @@ class PortfolioGUI:
             db_manager = DatabaseManager()  # Create an instance of DatabaseManager
             db_manager.insert_portfolio(portfolio_name)
 
-            portfolio_id = self.get_portfolio_id(portfolio_name)  # Get the ID of the inserted portfolio
-
-            if portfolio_name == "Neural Network":
+            if self.optimization_method_var.get() == "Neural Network":
                 # Neural Net Optimization
                 optimal_weights_nn = self.nn_optimizer.optimal_weights(returns_list_cleaned_aligned)[1]
-                self.insert_portfolio_weights(portfolio_id, optimal_weights_nn)
                 self.display_results(optimal_weights_nn, "Neural Net Optimized")
-            elif portfolio_name == "Monte Carlo Simulation":
+                self.insert_portfolio_weights(portfolio_name, optimal_weights_nn)
+            elif self.optimization_method_var.get() == "Monte Carlo Simulation":
                 # Monte Carlo Optimization
                 optimal_weights_mc = self.mc_optimizer.monte_carlo(returns_list_cleaned_aligned)
-                self.insert_portfolio_weights(portfolio_id, optimal_weights_mc)
                 self.display_results(optimal_weights_mc, "Monte Carlo Optimized")
-            elif portfolio_name == "Quantum Annealing":
+                self.insert_portfolio_weights(portfolio_name, optimal_weights_mc)
+            elif self.optimization_method_var.get() == "Quantum Annealing":
                 # Quantum Annealing Optimization
                 cov_matrix = self.qa_optimizer.covariance_matrix(returns_list_cleaned_aligned)
                 optimal_weights_qa = self.qa_optimizer.quantum_portfolio_optimization(cov_matrix)
-                self.insert_portfolio_weights(portfolio_id, optimal_weights_qa)
                 self.display_results(optimal_weights_qa, "Quantum Annealing Optimized")
+                self.insert_portfolio_weights(portfolio_name, optimal_weights_qa)
 
             self.feedback_label.config(text="Optimization completed successfully.")
         except Exception as e:
