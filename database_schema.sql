@@ -1,9 +1,5 @@
-USE Portfolio_Optimization;
-
-CREATE TABLE Portfolio (
-    PortfolioID INT PRIMARY KEY AUTO_INCREMENT,
-    DateCreated DATE NOT NULL
-);
+CREATE DATABASE IF NOT EXISTS PortfolioOptimization;
+USE PortfolioOptimization;
 
 CREATE TABLE Stock (
     StockID INT PRIMARY KEY AUTO_INCREMENT,
@@ -19,16 +15,17 @@ CREATE TABLE HistoricalData (
     FOREIGN KEY (StockID) REFERENCES Stock(StockID)
 );
 
-CREATE TABLE OptimizationTechnique (
-    TechniqueID INT PRIMARY KEY AUTO_INCREMENT,
-    Name VARCHAR(50) NOT NULL
+CREATE TABLE Portfolio (
+    PortfolioID INT PRIMARY KEY AUTO_INCREMENT,
+    OptimizationMethod VARCHAR(50) NOT NULL,
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE PortfolioComposition (
-    CompositionID INT PRIMARY KEY AUTO_INCREMENT,
-    PortfolioID INT,
-    StockID INT,
-    Weight DECIMAL(5, 4),
+CREATE TABLE PortfolioWeights (
+    WeightID INT PRIMARY KEY AUTO_INCREMENT,
+    PortfolioID INT NOT NULL,
+    StockID INT NOT NULL,
+    Weight DECIMAL(5, 2) NOT NULL,
     FOREIGN KEY (PortfolioID) REFERENCES Portfolio(PortfolioID),
     FOREIGN KEY (StockID) REFERENCES Stock(StockID)
 );
