@@ -17,8 +17,17 @@ CREATE TABLE HistoricalData (
 
 CREATE TABLE Portfolio (
     PortfolioID INT PRIMARY KEY AUTO_INCREMENT,
-    OptimizationMethod VARCHAR(50) NOT NULL,
+    Name VARCHAR(50) NOT NULL,
+    Description TEXT,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE PortfolioStocks (
+    PortfolioStockID INT PRIMARY KEY AUTO_INCREMENT,
+    PortfolioID INT,
+    StockID INT,
+    FOREIGN KEY (PortfolioID) REFERENCES Portfolio(PortfolioID),
+    FOREIGN KEY (StockID) REFERENCES Stock(StockID)
 );
 
 CREATE TABLE PortfolioWeights (
