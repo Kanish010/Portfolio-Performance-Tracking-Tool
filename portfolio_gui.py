@@ -214,10 +214,10 @@ class PortfolioGUI:
 
         # Add your MySQL database connection details
         db_connection = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="5g6JVu32Dj",
-            database="Portfolio_Optimization"
+            host="your_host",
+            user="your_username",
+            password="password",
+            database="your_database"
         )
 
         cursor = db_connection.cursor()
@@ -240,7 +240,6 @@ class PortfolioGUI:
                     sql = "INSERT INTO Stock (symbol, MarketPrice) VALUES (%s, %s)"
                     cursor.execute(sql, (stock, default_market_price))
                     db_connection.commit()
-
                     break
                 else:
                     self.show_error_message(f"Invalid stock ticker or no data available for {stock}. Please choose again.")
