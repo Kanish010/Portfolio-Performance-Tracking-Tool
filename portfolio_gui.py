@@ -8,7 +8,7 @@ from quantum_comp_optimizer import QuantumAnnealingOptimizer
 
 class DatabaseManager:
     """
-    Handles database operations for storing stock symbols and their historical data.
+    Handles database operations for storing stock symbols, their historical data, and portfolio information.
 
     Attributes:
         host (str): Hostname for the MySQL database.
@@ -37,12 +37,32 @@ class DatabaseManager:
             database=self.database
         )
         cursor = db_connection.cursor()
-        sql = "INSERT INTO Stock (symbol, MarketPrice) VALUES (%s, %s)"
+        sql = "INSERT INTO Stock (Symbol, MarketPrice) VALUES (%s, %s)"
         cursor.execute(sql, (symbol, market_price))
         db_connection.commit()
         cursor.close()
         db_connection.close()
 
+    def insert_portfolio(self, name):
+        """
+        Inserts portfolio information into the database.
+
+        Args:
+            name (str): Name of the portfolio.
+        """
+        db_connection = mysql.connector.connect(
+            host=self.host,
+            user=self.user,
+            password=self.password,
+            database=self.database
+        )
+        cursor = db_connection.cursor()
+        sql = "INSERT INTO Portfolio (Name) VALUES (%s)"
+        cursor.execute(sql, (name,))
+        db_connection.commit()
+        cursor.close()
+        db_connection.close()
+    
 class PortfolioGUI:
     """
     A graphical user interface (GUI) for portfolio optimization using neural network, Monte Carlo, and quantum annealing methods.
@@ -188,18 +208,28 @@ class PortfolioGUI:
             min_length = min(len(arr) for arr in returns_list_cleaned)
             returns_list_cleaned_aligned = [np.resize(arr, min_length) for arr in returns_list_cleaned]
 
-            if self.optimization_method_var.get() == "Neural Network":
+            # Use the selected optimization method as the portfolio name
+            portfolio_name = self.optimization_method_var.get()
+            db_manager = DatabaseManager()  # Create an instance of DatabaseManager
+            db_manager.insert_portfolio(portfolio_name)
+
+            portfolio_id = self.get_portfolio_id(portfolio_name)  # Get the ID of the inserted portfolio
+
+            if portfolio_name == "Neural Network":
                 # Neural Net Optimization
                 optimal_weights_nn = self.nn_optimizer.optimal_weights(returns_list_cleaned_aligned)[1]
+                self.insert_portfolio_weights(portfolio_id, optimal_weights_nn)
                 self.display_results(optimal_weights_nn, "Neural Net Optimized")
-            elif self.optimization_method_var.get() == "Monte Carlo Simulation":
+            elif portfolio_name == "Monte Carlo Simulation":
                 # Monte Carlo Optimization
                 optimal_weights_mc = self.mc_optimizer.monte_carlo(returns_list_cleaned_aligned)
+                self.insert_portfolio_weights(portfolio_id, optimal_weights_mc)
                 self.display_results(optimal_weights_mc, "Monte Carlo Optimized")
-            elif self.optimization_method_var.get() == "Quantum Annealing":
+            elif portfolio_name == "Quantum Annealing":
                 # Quantum Annealing Optimization
                 cov_matrix = self.qa_optimizer.covariance_matrix(returns_list_cleaned_aligned)
                 optimal_weights_qa = self.qa_optimizer.quantum_portfolio_optimization(cov_matrix)
+                self.insert_portfolio_weights(portfolio_id, optimal_weights_qa)
                 self.display_results(optimal_weights_qa, "Quantum Annealing Optimized")
 
             self.feedback_label.config(text="Optimization completed successfully.")
