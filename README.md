@@ -20,7 +20,7 @@ The QuantumAnnealingOptimizer class levrages quantum computing techniques, aims 
 The PortfolioGUI class provides a graphical user interface for users to input the number of stocks and initiate the portfolio optimization process. It utilizes instances of NeuralNetOptimizer and MonteCarloOptimizer to perform optimization and displays results in a scrollable text widget. Allows the user to choose between using the Neural Network or the Monte Carlo Simulation through a widget on the GUI. 
 
 ### MYSQL Database
-The DatabaseManager class 
+The DatabaseManager class is designed to handle database operations related to storing stock symbols and portfolio information such as the type of optimizer used and the weight assigned to each stock in the portfolio. The class establishes a connection to a local database and inserts the relevant data into the database. The database can be created by running the schema in "database_schema.sql". 
 
 # Disclaimer
 This script is provided for educational purposes only and should not be considered as financial advice. Always conduct thorough research and consult with financial professionals before making investment decisions.
