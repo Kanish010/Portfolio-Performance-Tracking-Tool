@@ -6,6 +6,43 @@ from neural_net_optimizer import NeuralNetOptimizer
 from monte_carlo_optimizer import MonteCarloOptimizer
 from quantum_comp_optimizer import QuantumAnnealingOptimizer 
 
+class DatabaseManager:
+    """
+    Handles database operations for storing stock symbols and their historical data.
+
+    Attributes:
+        host (str): Hostname for the MySQL database.
+        user (str): Username for accessing the MySQL database.
+        password (str): Password for accessing the MySQL database.
+        database (str): Name of the MySQL database.
+    """
+    def __init__(self, host="localhost", user="root", password="5g6JVu32Dj", database="PortfolioOptimization"):
+        self.host = host
+        self.user = user
+        self.password = password
+        self.database = database
+
+    def insert_stock_data(self, symbol, market_price):
+        """
+        Inserts stock symbol and market price into the database.
+
+        Args:
+            symbol (str): Stock symbol.
+            market_price (float): Market price of the stock.
+        """
+        db_connection = mysql.connector.connect(
+            host=self.host,
+            user=self.user,
+            password=self.password,
+            database=self.database
+        )
+        cursor = db_connection.cursor()
+        sql = "INSERT INTO Stock (symbol, MarketPrice) VALUES (%s, %s)"
+        cursor.execute(sql, (symbol, market_price))
+        db_connection.commit()
+        cursor.close()
+        db_connection.close()
+
 class PortfolioGUI:
     """
     A graphical user interface (GUI) for portfolio optimization using neural network, Monte Carlo, and quantum annealing methods.
@@ -211,16 +248,7 @@ class PortfolioGUI:
             list: List of tuples containing stock symbols and their historical data.
         """
         historical_data_list = []
-
-        # Add your MySQL database connection details
-        db_connection = mysql.connector.connect(
-            host="your_host",
-            user="your_username",
-            password="password",
-            database="your_database"
-        )
-
-        cursor = db_connection.cursor()
+        db_manager = DatabaseManager()  # Create an instance of DatabaseManager
 
         for _ in range(num_stock):
             while True:
@@ -237,15 +265,10 @@ class PortfolioGUI:
                     default_market_price = historical_data['Close'].iloc[-1]
 
                     # Insert the stock symbol into the database with the closing price as 'MarketPrice'
-                    sql = "INSERT INTO Stock (symbol, MarketPrice) VALUES (%s, %s)"
-                    cursor.execute(sql, (stock, default_market_price))
-                    db_connection.commit()
+                    db_manager.insert_stock_data(stock, default_market_price)
                     break
                 else:
                     self.show_error_message(f"Invalid stock ticker or no data available for {stock}. Please choose again.")
-
-        cursor.close()
-        db_connection.close()
 
         return historical_data_list
 
