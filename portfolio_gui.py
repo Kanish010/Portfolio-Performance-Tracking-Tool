@@ -154,7 +154,7 @@ class PortfolioGUI:
             # Use the selected optimization method as the portfolio name
             portfolio_name = self.optimization_method_var.get()
             db_manager = DatabaseManager()  # Create an instance of DatabaseManager
-            db_manager.insert_portfolio(portfolio_name, optimal_weights_nn)
+            db_manager.insert_portfolio(portfolio_name)
 
             if self.optimization_method_var.get() == "Neural Network":
                 # Neural Net Optimization
