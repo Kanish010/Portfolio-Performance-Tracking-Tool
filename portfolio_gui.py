@@ -120,9 +120,6 @@ class PortfolioGUI:
         disclaimer_label.pack(pady=5, padx=10, side="bottom")  # Adjusted padding to reduce blank space
         return disclaimer_label
 
-    def insert_portfolio(self, name):
-        pass
-        
     def run_optimization(self):
         """
         Initiates portfolio optimization based on user input.
@@ -275,6 +272,9 @@ class PortfolioGUI:
         """
         tk.messagebox.showerror("Error", message)
 
+    def insert_portfolio(self, name):
+        pass
+    
 if __name__ == "__main__":
     nn_optimizer = NeuralNetOptimizer()
     mc_optimizer = MonteCarloOptimizer()
