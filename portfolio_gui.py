@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, scrolledtext, simpledialog, messagebox
 import numpy as np
+import mysql.connector
 from SQL_connector import DatabaseManager
 from neural_net_optimizer import NeuralNetOptimizer
 from monte_carlo_optimizer import MonteCarloOptimizer
@@ -119,6 +120,9 @@ class PortfolioGUI:
         disclaimer_label.pack(pady=5, padx=10, side="bottom")  # Adjusted padding to reduce blank space
         return disclaimer_label
 
+    def insert_portfolio(self, name):
+        pass
+        
     def run_optimization(self):
         """
         Initiates portfolio optimization based on user input.
@@ -160,18 +164,18 @@ class PortfolioGUI:
                 # Neural Net Optimization
                 optimal_weights_nn = self.nn_optimizer.optimal_weights(returns_list_cleaned_aligned)[1]
                 self.display_results(optimal_weights_nn, "Neural Net Optimized")
-                self.insert_portfolio(portfolio_name, optimal_weights_nn)
+                self.insert_portfolio(portfolio_name)
             elif self.optimization_method_var.get() == "Monte Carlo Simulation":
                 # Monte Carlo Optimization
                 optimal_weights_mc = self.mc_optimizer.monte_carlo(returns_list_cleaned_aligned)
                 self.display_results(optimal_weights_mc, "Monte Carlo Optimized")
-                self.insert_portfolio(portfolio_name, optimal_weights_mc)
+                self.insert_portfolio(portfolio_name)
             elif self.optimization_method_var.get() == "Quantum Annealing":
                 # Quantum Annealing Optimization
                 cov_matrix = self.qa_optimizer.covariance_matrix(returns_list_cleaned_aligned)
                 optimal_weights_qa = self.qa_optimizer.quantum_portfolio_optimization(cov_matrix)
                 self.display_results(optimal_weights_qa, "Quantum Annealing Optimized")
-                self.insert_portfolio(portfolio_name, optimal_weights_qa)
+                self.insert_portfolio(portfolio_name)
 
             self.feedback_label.config(text="Optimization completed successfully.")
         except Exception as e:
