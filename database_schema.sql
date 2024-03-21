@@ -21,14 +21,6 @@ CREATE TABLE Portfolio (
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE PortfolioStocks (
-    PortfolioStockID INT PRIMARY KEY AUTO_INCREMENT,
-    PortfolioID INT,
-    StockID INT,
-    FOREIGN KEY (PortfolioID) REFERENCES Portfolio(PortfolioID),
-    FOREIGN KEY (StockID) REFERENCES Stock(StockID)
-);
-
 CREATE TABLE PortfolioWeights (
     WeightID INT PRIMARY KEY AUTO_INCREMENT,
     PortfolioID INT NOT NULL,
