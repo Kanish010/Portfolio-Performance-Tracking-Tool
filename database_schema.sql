@@ -23,9 +23,6 @@ CREATE TABLE Portfolio (
 
 CREATE TABLE PortfolioWeights (
     WeightID INT PRIMARY KEY AUTO_INCREMENT,
-    PortfolioID INT NOT NULL,
-    StockID INT NOT NULL,
-    Weight DECIMAL(5, 2) NOT NULL,
     FOREIGN KEY (PortfolioID) REFERENCES Portfolio(PortfolioID),
     FOREIGN KEY (StockID) REFERENCES Stock(StockID)
 );
