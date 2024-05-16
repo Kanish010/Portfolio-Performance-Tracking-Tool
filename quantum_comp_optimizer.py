@@ -114,4 +114,3 @@ class QuantumAnnealingOptimizer:
 
 if __name__ == "__main__":
     optimizer = QuantumAnnealingOptimizer()
-    # You can call the methods of the optimizer here as needed

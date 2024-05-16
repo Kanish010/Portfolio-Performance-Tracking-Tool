@@ -195,4 +195,3 @@ class NeuralNetOptimizer:
 
 if __name__ == "__main__":
     optimizer = NeuralNetOptimizer()
-    # Example: Call methods or perform actions using the optimizer object
