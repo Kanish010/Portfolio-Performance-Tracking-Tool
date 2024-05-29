@@ -10,7 +10,7 @@ class DatabaseManager:
         password (str): Password for accessing the MySQL database.
         database (str): Name of the MySQL database.
     """
-    def __init__(self, host="localhost", user="root", password="5g6JVu32Dj", database="PortfolioOptimization"):
+    def __init__(self, host="localhost", user="root", password="password", database="PortfolioOptimization"):
         self.host = host
         self.user = user
         self.password = password
