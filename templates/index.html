@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Portfolio Optimization</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Portfolio Optimization</h1>
+        <form id="optimizationForm">
+            <label for="num_stocks">Number of stocks:</label>
+            <input type="number" id="num_stocks" name="num_stocks" required>
+
+            <label for="stock_data">Stock Tickers:</label>
+            <textarea id="stock_data" name="stock_data" rows="4" required></textarea>
+
+            <label for="optimization_method">Choose Optimization Method:</label>
+            <select id="optimization_method" name="optimization_method" required>
+                <option value="">Choose Optimization Method</option>
+                <option value="Neural Network">Neural Network</option>
+                <option value="Monte Carlo Simulation">Monte Carlo Simulation</option>
+                <option value="Quantum Annealing">Quantum Annealing</option>
+            </select>
+
+            <button type="submit">Run Portfolio Optimization</button>
+        </form>
+        <div id="results"></div>
+    </div>
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+</body>
+</html>

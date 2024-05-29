@@ -1,11 +1,12 @@
 import tkinter as tk
-from tkinter import ttk, scrolledtext, simpledialog, messagebox
+from tkinter import ttk, scrolledtext, simpledialog, messagebox, filedialog
+import pandas as pd
 import numpy as np
 from SQL_connector import DatabaseManager
 from neural_net_optimizer import NeuralNetOptimizer
 from monte_carlo_optimizer import MonteCarloOptimizer
-from quantum_comp_optimizer import QuantumAnnealingOptimizer 
-    
+from quantum_comp_optimizer import QuantumAnnealingOptimizer
+
 class PortfolioGUI:
     """
     A graphical user interface (GUI) for portfolio optimization using neural network, Monte Carlo, and quantum annealing methods.
@@ -53,7 +54,10 @@ class PortfolioGUI:
         self.num_stock_entry = ttk.Entry(self.root, font=("Helvetica", 12))
         self.num_stock_entry.pack(pady=10)
 
-        optimization_methods = ["Choose Optimization Method", "Neural Network", "Monte Carlo Simulation", "Quantum Annealing"]  # Add "Quantum Annealing" option
+        load_button = ttk.Button(self.root, text="Load Stock Tickers from Excel", command=self.load_tickers_from_excel)
+        load_button.pack(pady=5, padx=10)  # Added button to load tickers from Excel
+
+        optimization_methods = ["Choose Optimization Method", "Neural Network", "Monte Carlo Simulation", "Quantum Annealing"]
         self.optimization_method_var = tk.StringVar(value=optimization_methods[0])  
         self.optimization_method_menu = ttk.OptionMenu(self.root, self.optimization_method_var, *optimization_methods)
         self.optimization_method_menu.pack(pady=5)
@@ -62,9 +66,8 @@ class PortfolioGUI:
         invalid_label.pack(pady=10)
 
         run_button = ttk.Button(self.root, text="Run Portfolio Optimization", command=self.run_optimization)
-        run_button.pack(pady=5, padx=10)  # Adjusted padding to reduce blank space
+        run_button.pack(pady=5, padx=10)
 
-        # Bind a function to the OptionMenu variable to update the menu
         self.optimization_method_var.trace("w", self.update_option_menu)
 
     def update_option_menu(self, *args):
@@ -116,7 +119,7 @@ class PortfolioGUI:
             ttk.Label: The disclaimer label.
         """
         disclaimer_label = ttk.Label(self.root, text="Disclaimer: This is NOT financial advice.", font=("Calibri", 10), foreground="red")
-        disclaimer_label.pack(pady=5, padx=10, side="bottom")  # Adjusted padding to reduce blank space
+        disclaimer_label.pack(pady=5, padx=10, side="bottom")
         return disclaimer_label
 
     def run_optimization(self):
@@ -137,46 +140,41 @@ class PortfolioGUI:
         self.feedback_label.config(text="Optimization in progress...")
         self.root.update()
 
-        # Disable the button and run the optimization
         self.disable_run_button()
         try:
+            optimization_method = self.optimization_method_var.get()
+            if optimization_method not in ["Neural Network", "Monte Carlo Simulation", "Quantum Annealing"]:
+                messagebox.showerror("Error", "Invalid optimization method selected.")
+                return
+
+            db_manager = DatabaseManager()
+            portfolio_id = db_manager.insert_portfolio(optimization_method)
+
             invalid_label = ttk.Label(self.root, text="", foreground="red", font=("Helvetica", 12))
             self.historical_data_list = self.stock_data(num_stock, invalid_label)
 
-            if not self.historical_data_list:
-                invalid_label.config(text="No valid stocks entered. Please try again.")
+            if len(self.historical_data_list) < 2:
+                invalid_label.config(text="Not enough valid stocks entered. Please try again.")
                 return
 
             returns_list_cleaned = [data["Close"].pct_change().dropna().values for _, data in self.historical_data_list]
             min_length = min(len(arr) for arr in returns_list_cleaned)
             returns_list_cleaned_aligned = [np.resize(arr, min_length) for arr in returns_list_cleaned]
 
-            # Use the selected optimization method as the portfolio name
-            portfolio_name = self.optimization_method_var.get()
-            db_manager = DatabaseManager()  # Create an instance of DatabaseManager
-            db_manager.insert_portfolio(portfolio_name)
-
-            if self.optimization_method_var.get() == "Neural Network":
-                # Neural Net Optimization
-                optimal_weights_nn = self.nn_optimizer.optimal_weights(returns_list_cleaned_aligned)[1]
-                self.display_results(optimal_weights_nn, "Neural Net Optimized")
-                self.insert_portfolio(portfolio_name)
-            elif self.optimization_method_var.get() == "Monte Carlo Simulation":
-                # Monte Carlo Optimization
-                optimal_weights_mc = self.mc_optimizer.monte_carlo(returns_list_cleaned_aligned)
-                self.display_results(optimal_weights_mc, "Monte Carlo Optimized")
-                self.insert_portfolio(portfolio_name)
-            elif self.optimization_method_var.get() == "Quantum Annealing":
-                # Quantum Annealing Optimization
+            if optimization_method == "Neural Network":
+                optimal_weights = self.nn_optimizer.optimal_weights(returns_list_cleaned_aligned)[1]
+            elif optimization_method == "Monte Carlo Simulation":
+                optimal_weights = self.mc_optimizer.monte_carlo(returns_list_cleaned_aligned)
+            elif optimization_method == "Quantum Annealing":
                 cov_matrix = self.qa_optimizer.covariance_matrix(returns_list_cleaned_aligned)
-                optimal_weights_qa = self.qa_optimizer.quantum_portfolio_optimization(cov_matrix)
-                self.display_results(optimal_weights_qa, "Quantum Annealing Optimized")
-                self.insert_portfolio(portfolio_name)
+                optimal_weights = self.qa_optimizer.quantum_portfolio_optimization(cov_matrix)
 
+            self.save_portfolio_stocks(portfolio_id, optimal_weights)
+            self.display_results(optimal_weights, optimization_method)
             self.feedback_label.config(text="Optimization completed successfully.")
         except Exception as e:
             self.feedback_label.config(text=f"Error during optimization: {str(e)}")
-            print (f"Error during optimization: {str(e)}")
+            print(f"Error during optimization: {str(e)}")
         finally:
             self.enable_run_button()
 
@@ -188,7 +186,7 @@ class PortfolioGUI:
             if isinstance(widget, ttk.Button):
                 widget["state"] = "disabled"
         self.progress_bar = ttk.Progressbar(self.root, orient="horizontal", length=200, mode="indeterminate")
-        self.progress_bar.pack(pady=5, padx=10)  # Adjusted padding to reduce blank space
+        self.progress_bar.pack(pady=5, padx=10)
         self.progress_bar.start()
 
     def enable_run_button(self):
@@ -219,29 +217,104 @@ class PortfolioGUI:
             list: List of tuples containing stock symbols and their historical data.
         """
         historical_data_list = []
-        db_manager = DatabaseManager()  # Create an instance of DatabaseManager
+        db_manager = DatabaseManager()
 
-        for _ in range(num_stock):
-            while True:
-                stock = simpledialog.askstring("Enter Stock Symbol", "Enter the stock symbol: ")
-                if not stock:
-                    break
+        count = 0
+        while count < num_stock:
+            stock = simpledialog.askstring("Enter Stock Symbol", f"Enter stock symbol {count + 1}/{num_stock}:")
+            if not stock:
+                messagebox.showerror("Error", f"Stock symbol {count + 1} cannot be empty. Please enter a valid stock symbol.")
+                continue
 
-                stock = stock.upper().replace(" ", "")
+            stock = stock.upper().replace(" ", "")
+            print(f"Fetching data for stock: {stock}")  # Debug print
+
+            try:
                 historical_data = self.nn_optimizer.historical_stock_data(stock)
+                print(f"Fetched historical data for {stock}")  # Debug print
+
                 if not historical_data.empty:
                     historical_data_list.append((stock, historical_data))
-
-                    # Use the closing price as the default market price
-                    default_market_price = historical_data['Close'].iloc[-1]
-
-                    # Insert the stock symbol into the database with the closing price as 'MarketPrice'
-                    db_manager.insert_stock_data(stock, default_market_price)
-                    break
+                    # Insert stock into Stocks table
+                    db_manager.insert_stock(stock)
+                    count += 1
                 else:
                     self.show_error_message(f"Invalid stock ticker or no data available for {stock}. Please choose again.")
+            except Exception as e:
+                print(f"Error fetching or inserting data for stock {stock}: {e}")  # Debug print
+                self.show_error_message(f"Error fetching or inserting data for stock {stock}: {e}")
 
+        print("Completed fetching and inserting stock data")  # Debug print
         return historical_data_list
+
+    def load_tickers_from_excel(self):
+        """
+        Prompts the user to select an Excel file and loads stock tickers from it.
+        """
+        file_path = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx *.xls")])
+        if file_path:
+            try:
+                df = pd.read_excel(file_path)
+                if 'Ticker' in df.columns:
+                    tickers = df['Ticker'].dropna().astype(str).str.upper().tolist()
+                    num_stock = len(tickers)
+                    self.num_stock_entry.delete(0, tk.END)
+                    self.num_stock_entry.insert(0, str(num_stock))
+                    self.historical_data_list = self.get_stock_data_from_list(tickers)
+                    self.feedback_label.config(text="Tickers loaded successfully.")
+                    self.optimize_portfolio()
+                else:
+                    self.show_error_message("Excel file must contain a 'Ticker' column.")
+            except Exception as e:
+                self.show_error_message(f"Failed to load Excel file: {str(e)}")
+
+    def get_stock_data_from_list(self, tickers):
+        """
+        Retrieves historical data for a list of stock tickers.
+
+        Args:
+            tickers (list): List of stock tickers.
+
+        Returns:
+            list: List of tuples containing stock symbols and their historical data.
+        """
+        historical_data_list = []
+        db_manager = DatabaseManager()
+
+        for stock in tickers:
+            print(f"Fetching data for stock: {stock}")  # Debug print
+
+            try:
+                historical_data = self.nn_optimizer.historical_stock_data(stock)
+                print(f"Fetched historical data for {stock}")  # Debug print
+
+                if not historical_data.empty:
+                    historical_data_list.append((stock, historical_data))
+                    # Insert stock into Stocks table
+                    db_manager.insert_stock(stock)
+                else:
+                    self.show_error_message(f"Invalid stock ticker or no data available for {stock}. Skipping.")
+            except Exception as e:
+                print(f"Error fetching or inserting data for stock {stock}: {e}")  # Debug print
+                self.show_error_message(f"Error fetching or inserting data for stock {stock}: {e}")
+
+        print("Completed fetching and inserting stock data")  # Debug print
+        return historical_data_list
+
+    def save_portfolio_stocks(self, portfolio_id, optimal_weights):
+        """
+        Saves the optimized portfolio stocks into the database.
+
+        Args:
+            portfolio_id (int): ID of the portfolio.
+            optimal_weights (numpy.ndarray): Optimal weights for the portfolio.
+        """
+        db_manager = DatabaseManager()
+        total_weight = np.sum(optimal_weights)
+        normalized_weights = (optimal_weights / total_weight) * 100
+
+        for (stock, _), weight in zip(self.historical_data_list, normalized_weights):
+            db_manager.insert_portfolio_stock(portfolio_id, stock, weight)
 
     def display_results(self, optimal_weights, title):
         """
@@ -252,7 +325,7 @@ class PortfolioGUI:
             title (str): Title for the optimization method.
         """
         if isinstance(optimal_weights, np.ndarray):
-            optimal_weights = optimal_weights.flatten()  # Flatten the array if necessary
+            optimal_weights = optimal_weights.flatten()
 
         total_weight = np.sum(optimal_weights)
         normalized_weights = (optimal_weights / total_weight) * 100
@@ -261,6 +334,29 @@ class PortfolioGUI:
         for stock, weight in zip([stock for stock, _ in self.historical_data_list], normalized_weights):
             self.result_text.insert(tk.END, f"   {stock}: {weight:.2f}%\n")
         self.result_text.insert(tk.END, "\n")
+
+    def optimize_portfolio(self):
+        """
+        Optimizes the portfolio based on the selected optimization method.
+        """
+        optimization_method = self.optimization_method_var.get()
+        if optimization_method not in ["Neural Network", "Monte Carlo Simulation", "Quantum Annealing"]:
+            self.show_error_message("Invalid optimization method selected.")
+            return
+
+        returns_list_cleaned = [data["Close"].pct_change().dropna().values for _, data in self.historical_data_list]
+        min_length = min(len(arr) for arr in returns_list_cleaned)
+        returns_list_cleaned_aligned = [np.resize(arr, min_length) for arr in returns_list_cleaned]
+
+        if optimization_method == "Neural Network":
+            optimal_weights = self.nn_optimizer.optimal_weights(returns_list_cleaned_aligned)[1]
+        elif optimization_method == "Monte Carlo Simulation":
+            optimal_weights = self.mc_optimizer.monte_carlo(returns_list_cleaned_aligned)
+        elif optimization_method == "Quantum Annealing":
+            cov_matrix = self.qa_optimizer.covariance_matrix(returns_list_cleaned_aligned)
+            optimal_weights = self.qa_optimizer.quantum_portfolio_optimization(cov_matrix)
+
+        self.display_results(optimal_weights, optimization_method)
 
     def show_error_message(self, message):
         """
@@ -271,9 +367,6 @@ class PortfolioGUI:
         """
         tk.messagebox.showerror("Error", message)
 
-    def insert_portfolio(self, name):
-        pass
-    
 if __name__ == "__main__":
     nn_optimizer = NeuralNetOptimizer()
     mc_optimizer = MonteCarloOptimizer()

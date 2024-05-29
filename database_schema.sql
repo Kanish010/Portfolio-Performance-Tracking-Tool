@@ -1,28 +1,38 @@
 CREATE DATABASE IF NOT EXISTS PortfolioOptimization;
 USE PortfolioOptimization;
 
-CREATE TABLE Stock (
-    StockID INT PRIMARY KEY AUTO_INCREMENT,
-    Symbol VARCHAR(10) NOT NULL,
-    MarketPrice DECIMAL(10, 2) NOT NULL
-);
-
-CREATE TABLE HistoricalData (
-    HistoricalID INT PRIMARY KEY AUTO_INCREMENT,
-    StockID INT,
-    Date DATE,
-    ClosePrice DECIMAL(10, 2),
-    FOREIGN KEY (StockID) REFERENCES Stock(StockID)
-);
-
-CREATE TABLE Portfolio (
-    PortfolioID INT PRIMARY KEY AUTO_INCREMENT,
-    Name VARCHAR(50) NOT NULL,
+-- Portfolios table
+CREATE TABLE Portfolios (
+    PortfolioID INT AUTO_INCREMENT PRIMARY KEY,
+    OptimizationMethod VARCHAR(50) NOT NULL,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE PortfolioWeights (
-    WeightID INT PRIMARY KEY AUTO_INCREMENT,
-    FOREIGN KEY (PortfolioID) REFERENCES Portfolio(PortfolioID),
-    FOREIGN KEY (StockID) REFERENCES Stock(StockID)
+-- PortfolioStocks table
+CREATE TABLE PortfolioStocks (
+    PortfolioID INT NOT NULL,
+    StockTicker VARCHAR(10) NOT NULL,
+    StockWeight DECIMAL(5,2) NOT NULL,
+    PRIMARY KEY (PortfolioID, StockTicker),
+    FOREIGN KEY (PortfolioID) REFERENCES Portfolios(PortfolioID)
+);
+
+-- Stocks table
+CREATE TABLE Stocks (
+    StockID INT AUTO_INCREMENT PRIMARY KEY,
+    StockTicker VARCHAR(10) NOT NULL UNIQUE
+);
+
+-- HistoricalData table
+CREATE TABLE HistoricalData (
+    StockID INT NOT NULL,
+    Date DATE NOT NULL,
+    MarketPrice DECIMAL(10,2),
+    Open DECIMAL(10,2),
+    Close DECIMAL(10,2),
+    High DECIMAL(10,2),
+    Low DECIMAL(10,2),
+    Volume BIGINT,
+    PRIMARY KEY (StockID, Date),
+    FOREIGN KEY (StockID) REFERENCES Stocks(StockID)
 );
