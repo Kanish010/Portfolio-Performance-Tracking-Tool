@@ -17,7 +17,6 @@ def index():
 
 @app.route('/optimize', methods=['POST'])
 def optimize():
-    num_stocks = int(request.form['num_stocks'])
     optimization_method = request.form['optimization_method']
     stock_data = request.form.getlist('stock_data[]')
     
@@ -38,7 +37,7 @@ def optimize():
     total_weight = np.sum(optimal_weights)
     normalized_weights = (optimal_weights / total_weight) * 100
 
-    results = {stock: float(weight) for stock, weight in zip(stock_data, normalized_weights)}
+    results = {stock.upper(): float(weight.item()) for stock, weight in zip(stock_data, normalized_weights)}
     
     return jsonify(results)
 
