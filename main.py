@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify
-from neural_net_optimizer import NeuralNetOptimizer
-from monte_carlo_optimizer import MonteCarloOptimizer
-from quantum_comp_optimizer import QuantumAnnealingOptimizer
+from Models.neural_net_optimizer import NeuralNetOptimizer
+from Models.monte_carlo_optimizer import MonteCarloOptimizer
+from Models.quantum_comp_optimizer import QuantumAnnealingOptimizer
 from SQL_connector import DatabaseManager
 import numpy as np
 import re

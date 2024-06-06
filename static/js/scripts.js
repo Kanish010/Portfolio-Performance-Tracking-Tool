@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             const resultsDiv = document.getElementById('results');
             resultsDiv.innerHTML = `
+            <br>
                 <h2>Optimization Results</h2>
                 <table class="table table-bordered table-striped">
                     <thead>
