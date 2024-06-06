@@ -1,14 +1,50 @@
+:root {
+    --bg-color: #f8f9fa;
+    --text-color: #333;
+    --card-bg-color: #fff;
+    --header-bg-color: #007bff;
+    --header-text-color: #fff;
+    --input-bg-color: #fff;
+    --input-border-color: #ced4da;
+    --input-placeholder-color: #6c757d;
+    --table-header-bg-color: #007bff;
+    --table-header-text-color: #fff;
+    --table-row-bg-color: #f2f2f2;
+    --btn-bg-color: #28a745;
+    --btn-text-color: #fff;
+}
+
+body.dark-mode {
+    --bg-color: #2b2b2b;
+    --text-color: #ddd;
+    --card-bg-color: #3a3a3a;
+    --header-bg-color: #444;
+    --header-text-color: #ddd;
+    --input-bg-color: #555;
+    --input-border-color: #666;
+    --input-placeholder-color: #888;
+    --table-header-bg-color: #444;
+    --table-header-text-color: #ddd;
+    --table-row-bg-color: #555;
+    --btn-bg-color: #5a5a5a;
+    --btn-text-color: #ddd;
+}
+
 body {
-    background-color: #f8f9fa;
+    background-color: var(--bg-color);
+    color: var(--text-color);
     font-family: 'Arial', sans-serif;
 }
 
 .card {
+    background-color: var(--card-bg-color);
     border-radius: 10px;
     overflow: hidden;
 }
 
 .card-header {
+    background-color: var(--header-bg-color);
+    color: var(--header-text-color);
     border-top-left-radius: 0;
     border-top-right-radius: 0;
 }
@@ -20,21 +56,24 @@ body {
 
 .form-group label {
     font-weight: bold;
-    color: #495057;
+    color: var(--text-color);
 }
 
 .form-control {
+    background-color: var(--input-bg-color);
     border-radius: 5px;
-    border: 1px solid #ced4da;
+    border: 1px solid var(--input-border-color);
     padding: 10px;
 }
 
 .form-control::placeholder {
-    color: #6c757d;
+    color: var(--input-placeholder-color);
     opacity: 1;
 }
 
 .btn {
+    background-color: var(--btn-bg-color);
+    color: var(--btn-text-color);
     border-radius: 5px;
     font-size: 1.2em;
     padding: 10px;
@@ -43,7 +82,7 @@ body {
 #results h2 {
     margin-top: 20px;
     font-size: 1.5em;
-    color: #333;
+    color: var(--text-color);
 }
 
 .table {
@@ -51,12 +90,12 @@ body {
 }
 
 .table thead th {
-    background-color: #007bff;
-    color: white;
+    background-color: var(--table-header-bg-color);
+    color: var(--table-header-text-color);
 }
 
 .table tbody tr:nth-child(even) {
-    background-color: #f2f2f2;
+    background-color: var(--table-row-bg-color);
 }
 
 /* Additional styling for the dropdown menu */
