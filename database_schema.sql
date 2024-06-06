@@ -17,12 +17,6 @@ CREATE TABLE PortfolioStocks (
     FOREIGN KEY (PortfolioID) REFERENCES Portfolios(PortfolioID)
 );
 
--- Stocks table
-CREATE TABLE Stocks (
-    StockID INT AUTO_INCREMENT PRIMARY KEY,
-    StockTicker VARCHAR(10) NOT NULL UNIQUE
-);
-
 -- HistoricalData table
 CREATE TABLE HistoricalData (
     StockID INT NOT NULL,

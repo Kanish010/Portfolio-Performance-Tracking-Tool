@@ -2,7 +2,15 @@ document.getElementById('optimizationForm').addEventListener('submit', function(
     event.preventDefault();
 
     const formData = new FormData(this);
-    const stockData = formData.get('stock_data').split(',').map(stock => stock.trim().toUpperCase()).filter(stock => stock);
+    const stockDataInput = formData.get('stock_data');
+    
+    // Validate the stock data input
+    if (!/^[a-zA-Z0-9,\s]+$/.test(stockDataInput)) {
+        alert('Please separate stock tickers with commas.');
+        return;
+    }
+    
+    const stockData = stockDataInput.split(',').map(stock => stock.trim().toUpperCase()).filter(stock => stock);
 
     const data = new URLSearchParams();
     data.append('optimization_method', formData.get('optimization_method'));
@@ -14,6 +22,10 @@ document.getElementById('optimizationForm').addEventListener('submit', function(
     })
     .then(response => response.json())
     .then(data => {
+        if (data.error) {
+            alert(data.error);
+            return;
+        }
         const resultsDiv = document.getElementById('results');
         resultsDiv.innerHTML = `
             <h2>Optimization Results</h2>
