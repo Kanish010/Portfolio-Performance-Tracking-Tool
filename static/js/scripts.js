@@ -6,7 +6,7 @@ document.getElementById('optimizationForm').addEventListener('submit', function(
     
     // Validate the stock data input
     if (!/^[a-zA-Z0-9,\s]+$/.test(stockDataInput)) {
-        alert('Please separate stock tickers with commas.');
+        $('#errorModal').modal('show');
         return;
     }
     
@@ -23,7 +23,8 @@ document.getElementById('optimizationForm').addEventListener('submit', function(
     .then(response => response.json())
     .then(data => {
         if (data.error) {
-            alert(data.error);
+            $('#errorModal .modal-body').text(data.error);
+            $('#errorModal').modal('show');
             return;
         }
         const resultsDiv = document.getElementById('results');
@@ -49,6 +50,7 @@ document.getElementById('optimizationForm').addEventListener('submit', function(
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('An error occurred while processing your request.');
+        $('#errorModal .modal-body').text('An error occurred while processing your request.');
+        $('#errorModal').modal('show');
     });
 });

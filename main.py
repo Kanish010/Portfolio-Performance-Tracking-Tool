@@ -4,6 +4,7 @@ from monte_carlo_optimizer import MonteCarloOptimizer
 from quantum_comp_optimizer import QuantumAnnealingOptimizer
 from SQL_connector import DatabaseManager
 import numpy as np
+import re
 
 app = Flask(__name__)
 
@@ -13,7 +14,7 @@ mc_optimizer = MonteCarloOptimizer()
 qa_optimizer = QuantumAnnealingOptimizer()
 
 # Initialize database manager
-db_manager = DatabaseManager(host='localhost', user='root', password='5g6JVu32Dj', database='PortfolioOptimization')
+db_manager = DatabaseManager(host='localhost', user='root', password='password', database='PortfolioOptimization')
 
 @app.route('/')
 def index():
@@ -24,6 +25,10 @@ def optimize():
     try:
         optimization_method = request.form['optimization_method']
         stock_data = request.form.getlist('stock_data[]')
+        
+        # Validate the stock data input
+        if not all(re.match(r'^[a-zA-Z0-9]+$', stock) for stock in stock_data):
+            return jsonify({"error": "Please separate stock tickers with commas."}), 400
         
         if not stock_data:
             return jsonify({"error": "No stock data provided."}), 400
