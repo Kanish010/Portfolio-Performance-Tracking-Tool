@@ -13,7 +13,7 @@ mc_optimizer = MonteCarloOptimizer()
 qa_optimizer = QuantumAnnealingOptimizer()
 
 # Initialize database manager
-db_manager = DatabaseManager(host='localhost', user='root', password='password', database='PortfolioOptimization')
+db_manager = DatabaseManager(host='localhost', user='root', password='5g6JVu32Dj', database='PortfolioOptimization')
 
 @app.route('/')
 def index():

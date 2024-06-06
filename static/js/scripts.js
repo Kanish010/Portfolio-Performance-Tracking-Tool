@@ -29,7 +29,7 @@ document.getElementById('optimizationForm').addEventListener('submit', function(
         const resultsDiv = document.getElementById('results');
         resultsDiv.innerHTML = `
             <h2>Optimization Results</h2>
-            <table class="table">
+            <table class="table table-bordered table-striped">
                 <thead>
                     <tr>
                         <th>Stock Ticker</th>
@@ -49,5 +49,6 @@ document.getElementById('optimizationForm').addEventListener('submit', function(
     })
     .catch(error => {
         console.error('Error:', error);
+        alert('An error occurred while processing your request.');
     });
 });
