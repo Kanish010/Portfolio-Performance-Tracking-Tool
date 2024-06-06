@@ -27,8 +27,9 @@ def optimize():
         stock_data = request.form.getlist('stock_data[]')
         
         # Validate the stock data input
-        if not all(re.match(r'^[a-zA-Z0-9]+$', stock) for stock in stock_data):
-            return jsonify({"error": "Please separate stock tickers with commas."}), 400
+        invalid_stocks = [stock for stock in stock_data if not re.match(r'^[a-zA-Z0-9]+$', stock)]
+        if invalid_stocks:
+            return jsonify({"error": f"Invalid stock tickers: {', '.join(invalid_stocks)}. Please enter valid stock tickers."}), 400
         
         if not stock_data:
             return jsonify({"error": "No stock data provided."}), 400
@@ -36,9 +37,10 @@ def optimize():
         # Simulate fetching historical stock data
         historical_data_list = [nn_optimizer.historical_stock_data(stock) for stock in stock_data]
         valid_historical_data_list = [data for data in historical_data_list if not data.empty]
-        
-        if not valid_historical_data_list:
-            return jsonify({"error": "No valid historical data available for the provided stock tickers."}), 400
+        invalid_stocks = [stock for stock, data in zip(stock_data, historical_data_list) if data.empty]
+
+        if invalid_stocks:
+            return jsonify({"error": f"Invalid stock tickers with no data: {', '.join(invalid_stocks)}. Please enter valid stock tickers."}), 400
 
         returns_list_cleaned = [data["Close"].pct_change().dropna().values for data in valid_historical_data_list]
         min_length = min(len(arr) for arr in returns_list_cleaned)

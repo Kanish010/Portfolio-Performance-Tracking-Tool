@@ -6,6 +6,7 @@ document.getElementById('optimizationForm').addEventListener('submit', function(
     
     // Validate the stock data input
     if (!/^[a-zA-Z0-9,\s]+$/.test(stockDataInput)) {
+        $('#errorModal .modal-body').text('Please separate stock tickers with commas.');
         $('#errorModal').modal('show');
         return;
     }
