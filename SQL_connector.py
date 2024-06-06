@@ -35,13 +35,11 @@ class DatabaseManager:
             )
             cursor = db_connection.cursor()
             sql = "INSERT INTO Portfolios (OptimizationMethod) VALUES (%s)"
-            print(f"Executing SQL: {sql} with value {optimization_method}")  # Debug print
             cursor.execute(sql, (optimization_method,))
             portfolio_id = cursor.lastrowid  # Get the ID of the newly inserted portfolio
             db_connection.commit()
             cursor.close()
             db_connection.close()
-            print(f"Inserted portfolio with ID {portfolio_id} and method {optimization_method}")  # Debug print
             return portfolio_id
         except mysql.connector.Error as err:
             print(f"Error: {err}")  # Debug print
@@ -65,12 +63,10 @@ class DatabaseManager:
             )
             cursor = db_connection.cursor()
             sql = "INSERT INTO PortfolioStocks (PortfolioID, StockTicker, StockWeight) VALUES (%s, %s, %s)"
-            print(f"Executing SQL: {sql} with values {portfolio_id}, {stock_ticker}, {stock_weight}")  # Debug print
             cursor.execute(sql, (portfolio_id, stock_ticker, stock_weight))
             db_connection.commit()
             cursor.close()
             db_connection.close()
-            print(f"Inserted stock {stock_ticker} into portfolio {portfolio_id} with weight {stock_weight}")  # Debug print
         except mysql.connector.Error as err:
             print(f"Error: {err}")  # Debug print
 
