@@ -56,7 +56,7 @@ class NeuralNetOptimizer:
             tf.keras.layers.Dense(32, activation="relu", kernel_regularizer=tf.keras.regularizers.l2(0.01)),
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.Dropout(0.3),
-            tf.keras.layers.Dense(1)
+            tf.keras.layers.Dense(1, activation="relu", kernel_regularizer=tf.keras.regularizers.l2(0.01))
         ])
         model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0005), loss="mse")
         
