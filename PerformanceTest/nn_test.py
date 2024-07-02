@@ -5,6 +5,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
 
 class NeuralNetOptimizer:
     """
@@ -17,18 +18,19 @@ class NeuralNetOptimizer:
     def __init__(self):
         self.historical_data_list = []
 
-    def historical_stock_data(self, stock):
+    def historical_stock_data(self, stock, period="max"):
         """
         Fetches historical stock data using the Yahoo Finance API.
 
         Args:
             stock (str): The stock symbol.
+            period (str): The period of historical data to fetch.
 
         Returns:
             pandas.DataFrame: Historical stock data.
         """
         stock = yf.Ticker(stock)
-        historical_data = stock.history(period="max")
+        historical_data = stock.history(period=period)
         return historical_data
 
     def neuralnetwork_prediction(self, returns_list_cleaned_aligned):
@@ -50,15 +52,12 @@ class NeuralNetOptimizer:
         x_train, x_val, y_train, y_val = train_test_split(x_scaled, y, test_size=0.2, random_state=42)
 
         model = tf.keras.Sequential([
-            tf.keras.layers.Dense(128, activation="relu", kernel_regularizer=tf.keras.regularizers.l2(0.01)),
-            tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.Dropout(0.4),
             tf.keras.layers.Dense(64, activation="relu", kernel_regularizer=tf.keras.regularizers.l2(0.01)),
             tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.Dropout(0.4),
+            tf.keras.layers.Dropout(0.3),
             tf.keras.layers.Dense(32, activation="relu", kernel_regularizer=tf.keras.regularizers.l2(0.01)),
             tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.Dropout(0.4),
+            tf.keras.layers.Dropout(0.3),
             tf.keras.layers.Dense(1)
         ])
         model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0005), loss="mse")
@@ -71,6 +70,16 @@ class NeuralNetOptimizer:
         self.plot_learning_curve(history)
 
         predicted_returns = model.predict(scaler.transform(x[-1:, :]))
+        
+        # Calculate MSE
+        train_predictions = model.predict(x_train)
+        val_predictions = model.predict(x_val)
+        train_mse = mean_squared_error(y_train, train_predictions)
+        val_mse = mean_squared_error(y_val, val_predictions)
+        
+        print(f"Train MSE: {train_mse:.4f}")
+        print(f"Validation MSE: {val_mse:.4f}")
+
         return predicted_returns.flatten()
 
     def plot_learning_curve(self, history):
@@ -133,12 +142,13 @@ class NeuralNetOptimizer:
         portfolio_risk = np.sqrt(np.dot(weights.T, np.dot(cov_matrix, weights)))
         return -portfolio_return + 0.5 * portfolio_risk
 
-    def stock_data(self, stock_list):
+    def stock_data(self, stock_list, period="5y"):
         """
         Collects historical data for a specified list of stocks.
 
         Args:
             stock_list (list): List of stock symbols.
+            period (str): The period of historical data to fetch.
 
         Returns:
             list: List of tuples containing stock symbols and their historical data.
@@ -147,7 +157,7 @@ class NeuralNetOptimizer:
 
         for stock in stock_list:
             stock = stock.upper()
-            historical_data = self.historical_stock_data(stock)
+            historical_data = self.historical_stock_data(stock, period)
             if not historical_data.empty:
                 historical_data_list.append((stock, historical_data))
             else:
@@ -162,7 +172,7 @@ class NeuralNetOptimizer:
         stock_list = input("Enter stock symbols separated by commas: ").split(',')
         stock_list = [stock.strip() for stock in stock_list]
 
-        self.historical_data_list = self.stock_data(stock_list)
+        self.historical_data_list = self.stock_data(stock_list, period="5y")
 
         if not self.historical_data_list:
             print("No valid stocks entered. Please try again.")
