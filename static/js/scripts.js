@@ -1,17 +1,4 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Check localStorage for the user's theme preference
-    if (localStorage.getItem('theme') === 'dark') {
-        document.body.classList.add('dark-mode');
-        document.getElementById('toggleMode').textContent = 'Toggle Light Mode';
-    }
-
-    document.getElementById('toggleMode').addEventListener('click', function() {
-        document.body.classList.toggle('dark-mode');
-        const isDarkMode = document.body.classList.contains('dark-mode');
-        localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-        this.textContent = isDarkMode ? 'Toggle Light Mode' : 'Toggle Dark Mode';
-    });
-
     document.getElementById('optimizationForm').addEventListener('submit', function(event) {
         event.preventDefault();
 
@@ -58,15 +45,15 @@ document.addEventListener('DOMContentLoaded', function() {
                             <tr>
                                 <td>${stock.toUpperCase()}</td>
                                 <td>${weight.toFixed(2)}</td>
-                            </tr>                    `).join('')}
+                            </tr>`).join('')}
                 </tbody>
             </table>
         `;
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        $('#errorModal .modal-body').text('An error occurred while processing your request.');
-        $('#errorModal').modal('show');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            $('#errorModal .modal-body').text('An error occurred while processing your request.');
+            $('#errorModal').modal('show');
+        });
     });
-});
 });
