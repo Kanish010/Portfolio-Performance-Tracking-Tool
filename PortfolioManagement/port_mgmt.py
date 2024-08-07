@@ -183,6 +183,11 @@ def delete_stock(user_id, stock_id):
     if connection:
         cursor = connection.cursor()
         try:
+            cursor.execute("SELECT stock_id FROM Stocks WHERE stock_id = %s AND user_id = %s", (stock_id, user_id))
+            stock = cursor.fetchone()
+            if not stock:
+                return {"success": False, "message": "Stock not found or you do not have permission to delete this stock."}
+                
             cursor.execute("DELETE FROM Stocks WHERE stock_id = %s AND user_id = %s", (stock_id, user_id))
             connection.commit()
             print("Stock deleted successfully")
@@ -328,7 +333,7 @@ def handle_delete_stock(user_id):
     for stock in portfolio["stocks"]:
         print(f"Stock ID: {stock['stock_id']}, Symbol: {stock['symbol']}, Shares: {stock['shares']}")
 
-    stock_id = int(input("Enter stock ID to delete: ").strip())
+    stock_id = input("Enter stock ID to delete: ").strip()
     confirmation = input("Are you sure you want to delete this stock? This action cannot be undone. (yes/no): ").strip().lower()
     if confirmation == "yes":
         response = delete_stock(user_id, stock_id)
