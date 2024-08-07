@@ -1,0 +1,6 @@
+bcrypt
+mysql-connector-python
+openai
+yfinance
+python-dotenv
+pandas
