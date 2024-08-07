@@ -1,5 +1,5 @@
 # registration_login.py
-from auth import register_user, authenticate_user, update_user_profile, get_user_profile, delete_user_profile
+from Registration.auth import register_user, authenticate_user, update_user_profile, get_user_profile, delete_user_profile
 
 def handle_registration():
     username = input("Enter a username: ").strip()
