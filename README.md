@@ -1,4 +1,4 @@
-# Portfolio Performance Trackig Tool
+# Portfolio Performance Tracking Tool
 
 ## Overview
 The Portfolio Performance Tracking Tool is a Python-based application that allows users to create and manage multiple investment portfolios, track stock performance, and manage their profile information securely. The tool supports user authentication, portfolio creation, stock addition and deletion, and performance tracking.
