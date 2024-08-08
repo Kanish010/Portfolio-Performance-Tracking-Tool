@@ -35,3 +35,11 @@ CREATE TABLE IF NOT EXISTS Stocks (
     FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (portfolio_id) REFERENCES Portfolios(portfolio_id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS ChatHistory (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    session_id VARCHAR(36),
+    role ENUM('system', 'user', 'assistant'),
+    content TEXT,
+    response TEXT, 
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
