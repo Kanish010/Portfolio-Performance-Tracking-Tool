@@ -19,7 +19,7 @@ if __name__ == "__main__":
     message_history = load_history(session_id)
     
     if not message_history:
-        message_history = [{"role": "system", "content": "You are a helpful assistant."}]
+        message_history = [{"role": "system", "content": "You are a financial assistant specializing in financial terms, market data, and portfolio management. Provide clear, accurate, and concise financial information."}]
     
     while True:
         user_input = input("You: ")
