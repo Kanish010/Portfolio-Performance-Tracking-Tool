@@ -4,7 +4,8 @@ from database import create_connection, close_connection
 from PortfolioManagement.stock_price import get_current_stock_price
 
 def generate_uuid():
-    return str(uuid.uuid4())
+    """Generates a 6-character UUID for use in primary keys."""
+    return str(uuid.uuid4())[:6]
 
 def input_integer(prompt):
     """Helper function to get a valid integer input from the user."""
