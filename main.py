@@ -1,5 +1,5 @@
 from Registration.register_login import handle_registration, handle_login, handle_view_profile, handle_update_profile, handle_delete_profile
-from PortfolioManagement.port_mgmt import handle_create_portfolio, handle_edit_portfolio, handle_delete_portfolio, handle_view_portfolio, handle_add_stock, handle_delete_stock
+from PortfolioManagement.port_mgmt import create_portfolio, edit_portfolio, delete_portfolio, view_portfolio_with_stocks, view_portfolios, add_stock, delete_stock
 
 def profile_menu(user_id):
     while True:
@@ -16,13 +16,15 @@ def profile_menu(user_id):
             handle_update_profile(user_id)
         elif user_choice == '3':
             if handle_delete_profile(user_id):
-                break
+                print("Account deleted successfully. You are now logged out.")
+                return None  # Indicate that the user should be logged out
         elif user_choice == '4':
             break
         else:
             print("Invalid choice. Please try again.")
+    return user_id  # Return user_id if still logged in
 
-def portfolio_menu(user_id):
+def portfolio_management_menu(user_id):
     while True:
         print("\nPortfolio Management:")
         print("1. Create Portfolio")
@@ -31,21 +33,21 @@ def portfolio_menu(user_id):
         print("4. View Portfolio")
         print("5. Add Stock to Portfolio")
         print("6. Delete Stock from Portfolio")
-        print("7. Back to Main Menu")
+        print("7. Back to User Menu")
         user_choice = input("Enter your choice: ").strip()
         
         if user_choice == '1':
-            handle_create_portfolio(user_id)
+            create_portfolio(user_id)
         elif user_choice == '2':
-            handle_edit_portfolio(user_id)
+            edit_portfolio(user_id)
         elif user_choice == '3':
-            handle_delete_portfolio(user_id)
+            delete_portfolio(user_id)
         elif user_choice == '4':
-            handle_view_portfolio(user_id)
+            view_portfolio_with_stocks(user_id)
         elif user_choice == '5':
-            handle_add_stock(user_id)
+            add_stock(user_id)
         elif user_choice == '6':
-            handle_delete_stock(user_id)
+            delete_stock(user_id)
         elif user_choice == '7':
             break
         else:
@@ -73,9 +75,11 @@ def main():
                     user_choice = input("Enter your choice: ").strip()
                     
                     if user_choice == '1':
-                        profile_menu(user_id)
+                        user_id = profile_menu(user_id)
+                        if user_id is None:
+                            break  # Exit to main menu if user is logged out by deletion
                     elif user_choice == '2':
-                        portfolio_menu(user_id)
+                        portfolio_management_menu(user_id)
                     elif user_choice == '3':
                         print("Logged out successfully.")
                         break

@@ -1,5 +1,5 @@
 bcrypt
-mysql-connector-python
+psycopg2
 openai
 yfinance
 python-dotenv
