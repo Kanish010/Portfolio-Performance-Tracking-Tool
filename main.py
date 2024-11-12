@@ -17,7 +17,7 @@ def profile_menu(user_id):
         elif user_choice == '3':
             if handle_delete_profile(user_id):
                 print("Account deleted successfully. You are now logged out.")
-                return None  # Indicate tåhat the user should be logged out
+                return None  
         elif user_choice == '4':
             break
         else:
