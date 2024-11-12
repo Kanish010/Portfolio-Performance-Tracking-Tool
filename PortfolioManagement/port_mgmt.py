@@ -28,6 +28,28 @@ def list_user_portfolios(user_id):
             close_connection(connection)
     return [portfolio[0] for portfolio in portfolios]  # Return a list of portfolio names for further use
 
+def list_portfolio_stocks(portfolio_id):
+    """Fetches and prints all stocks in a given portfolio."""
+    connection = create_connection()
+    stocks = []
+    if connection:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('SELECT "symbol", "shares", "purchase_price", "avg_purchase_price" FROM "Stocks" WHERE "portfolio_id" = %s', (portfolio_id,))
+            stocks = cursor.fetchall()
+            if stocks:
+                print("\nStocks in this Portfolio:")
+                for idx, stock in enumerate(stocks, start=1):
+                    print(f"{idx}. Symbol: {stock[0]}, Shares: {stock[1]}, Latest Purchase Price: ${stock[2]:.2f}, Avg Purchase Price: ${stock[3]:.2f}")
+            else:
+                print("No stocks found in this portfolio.")
+        except Error as e:
+            print(f"Database Error: {e}")
+        finally:
+            cursor.close()
+            close_connection(connection)
+    return stocks
+
 def create_portfolio(user_id):
     name = input("Enter portfolio name: ")
     description = input("Enter portfolio description: ")
@@ -142,10 +164,10 @@ def view_portfolio_with_stocks(user_id):
             print("Portfolio Details:")
             print(f"Name: {portfolio_record[1]}")
             print(f"Description: {portfolio_record[2]}")
-            print("Stocks in Portfolio:")
-            cursor.execute('SELECT "symbol", "shares", "purchase_price" FROM "Stocks" WHERE "portfolio_id" = %s', (portfolio_record[0],))
-            for stock in cursor.fetchall():
-                print(f"Symbol: {stock[0]}, Shares: {stock[1]}, Purchase Price: ${stock[2]:.2f}")
+            
+            # Display stocks in the portfolio
+            list_portfolio_stocks(portfolio_record[0])
+            
         except Error as e:
             print(f"Database Error: {e}")
         finally:
@@ -166,14 +188,25 @@ def add_stock(user_id):
         print("Invalid portfolio name.")
         return
 
-    symbol = input("Enter stock symbol: ")
-    shares = float(input("Enter number of shares: "))
-    current_price = get_current_stock_price(symbol)
-    if current_price is None:
-        print("Failed to fetch stock price.")
-        return
+    # Loop until a valid stock symbol is entered
+    while True:
+        symbol = input("Enter stock symbol: ").upper()
+        current_price = get_current_stock_price(symbol)
+        if current_price is not None:
+            break
+        print("Invalid stock symbol. Please try again.")
 
-    stock_id = generate_uuid()
+    # Loop until a valid integer is entered for shares
+    while True:
+        try:
+            shares = int(input("Enter number of shares: "))
+            if shares <= 0:
+                print("Shares must be a positive integer.")
+                continue
+            break
+        except ValueError:
+            print("Invalid input for shares. Please enter a valid integer.")
+
     connection = create_connection()
     if connection:
         cursor = connection.cursor()
@@ -183,10 +216,27 @@ def add_stock(user_id):
             if not portfolio:
                 print("Portfolio not found.")
                 return
-            cursor.execute('INSERT INTO "Stocks" ("stock_id", "user_id", "portfolio_id", "symbol", "shares", "purchase_price") VALUES (%s, %s, %s, %s, %s, %s)',
-                           (stock_id, user_id, portfolio[0], symbol, shares, current_price))
+            portfolio_id = portfolio[0]
+
+            # Check if the stock already exists
+            cursor.execute('SELECT "shares", "avg_purchase_price" FROM "Stocks" WHERE "portfolio_id" = %s AND "symbol" = %s', (portfolio_id, symbol))
+            existing_stock = cursor.fetchone()
+            if existing_stock:
+                # Update shares and calculate new average purchase price
+                existing_shares, avg_price = map(float, existing_stock)  # Ensure avg_price is float
+                total_cost = avg_price * existing_shares + current_price * shares
+                new_shares = existing_shares + shares
+                new_avg_price = total_cost / new_shares
+                cursor.execute('UPDATE "Stocks" SET "shares" = %s, "purchase_price" = %s, "avg_purchase_price" = %s WHERE "portfolio_id" = %s AND "symbol" = %s',
+                               (new_shares, current_price, new_avg_price, portfolio_id, symbol))
+                print("Stock updated successfully.")
+            else:
+                # Insert as a new stock
+                stock_id = generate_uuid()
+                cursor.execute('INSERT INTO "Stocks" ("stock_id", "user_id", "portfolio_id", "symbol", "shares", "purchase_price", "avg_purchase_price") VALUES (%s, %s, %s, %s, %s, %s, %s)',
+                               (stock_id, user_id, portfolio_id, symbol, shares, current_price, current_price))
+                print("Stock added successfully.")
             connection.commit()
-            print("Stock added successfully.")
         except Error as e:
             print(f"Database Error: {e}")
         finally:
@@ -204,7 +254,6 @@ def delete_stock(user_id):
         print("Invalid portfolio name.")
         return
 
-    symbol = input("Enter stock symbol to delete: ")
     connection = create_connection()
     if connection:
         cursor = connection.cursor()
@@ -214,9 +263,39 @@ def delete_stock(user_id):
             if not portfolio:
                 print("Portfolio not found.")
                 return
-            cursor.execute('DELETE FROM "Stocks" WHERE "portfolio_id" = %s AND "symbol" = %s', (portfolio[0], symbol))
+            portfolio_id = portfolio[0]
+
+            # Display current stocks in the portfolio
+            stocks = list_portfolio_stocks(portfolio_id)
+            if not stocks:
+                print("No stocks found in this portfolio.")
+                return
+
+            symbol = input("Enter stock symbol to delete shares from: ").upper()
+            cursor.execute('SELECT "shares" FROM "Stocks" WHERE "portfolio_id" = %s AND "symbol" = %s', (portfolio_id, symbol))
+            stock = cursor.fetchone()
+            if not stock:
+                print("Stock not found in this portfolio.")
+                return
+
+            current_shares = stock[0]
+            delete_shares = int(input(f"Enter number of shares to delete (max {current_shares}): "))
+            if delete_shares > current_shares:
+                print("Cannot delete more shares than currently owned.")
+                return
+
+            if delete_shares < current_shares:
+                # Update shares if deleting part of the stock
+                new_shares = current_shares - delete_shares
+                cursor.execute('UPDATE "Stocks" SET "shares" = %s WHERE "portfolio_id" = %s AND "symbol" = %s',
+                               (new_shares, portfolio_id, symbol))
+                print(f"{delete_shares} shares deleted successfully.")
+            else:
+                # Delete stock entry if deleting all shares
+                cursor.execute('DELETE FROM "Stocks" WHERE "portfolio_id" = %s AND "symbol" = %s', (portfolio_id, symbol))
+                print("Stock deleted successfully.")
+
             connection.commit()
-            print("Stock deleted successfully.")
         except Error as e:
             print(f"Database Error: {e}")
         finally:

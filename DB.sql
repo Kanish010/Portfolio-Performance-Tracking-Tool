@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS "Stocks" (
     "symbol" VARCHAR(10) NOT NULL,
     "shares" INT NOT NULL,
     "purchase_price" NUMERIC(10, 2) NOT NULL,
+    "avg_purchase_price" NUMERIC(10, 2) DEFAULT 0,
     "total_value" NUMERIC(10, 2) GENERATED ALWAYS AS ("shares" * "purchase_price") STORED,
     "purchase_date" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
